@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة السلام المتكاملة للمقاولات | الإدارة السحابية الموحدة</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Cairo & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            950: '#030712',
+                            900: '#0b1329',
+                            850: '#101a35',
+                            800: '#172648',
+                            700: '#22375f',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #030712;
+            color: #f1f5f9;
+        }
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: #0b1329; }
+        ::-webkit-scrollbar-thumb { background: #22375f; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
+        .glass-panel {
+            background: rgba(16, 26, 53, 0.88);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(34, 55, 95, 0.8);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+<!-- Top Banner Notification for Sync Status -->
+<div id="syncToast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none">
+    <div class="px-4 py-2 rounded-xl bg-dark-900/95 border border-dark-700 shadow-2xl flex items-center gap-2.5 text-xs text-white backdrop-blur">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span id="syncToastText">جاري تحديث البيانات السحابية...</span>
+    </div>
+</div>
+
+<!-- Main Navigation Header -->
+<header class="border-b border-dark-700 bg-dark-900/95 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-emerald-500 flex items-center justify-center text-white shadow-lg">
+                <i class="fa-solid fa-layer-group text-2xl"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-base sm:text-xl md:text-2xl font-black text-white tracking-tight">
+                        منظومة السلام المتكاملة للمقاولات
+                    </h1>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        ربط سحابي ثلاثي مباشر
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400 hidden sm:block">بيان المشروعات ⟷ حركة المستخلصات ⟷ التأمينات الاجتماعية والتعلية</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+            <div class="hidden md:flex flex-col text-left text-[11px] font-mono text-slate-400 border-l border-dark-700 pl-3">
+                <span class="text-slate-500">آخر مزامنة:</span>
+                <span id="lastSyncTime" class="text-sky-400 font-bold">جاري الفحص...</span>
+            </div>
+            <!-- Sync Button -->
+            <button onclick="syncAllDataSources(true)" id="globalSyncBtn" class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-500 hover:to-emerald-500 text-white text-xs sm:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-arrows-rotate" id="globalSyncIcon"></i>
+                <span>تحديث سحابي فوري</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- View Navigation Bar -->
+<div class="bg-dark-950/80 border-b border-dark-700 sticky top-20 z-30 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
+        <!-- Navigation Tabs -->
+        <nav class="flex items-center gap-2 overflow-x-auto text-xs sm:text-sm">
+            <button onclick="switchView('master')" id="tabBtn-master" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-sky-600 text-white transition whitespace-nowrap shadow-md">
+                <i class="fa-solid fa-file-contract"></i>
+                <span>بيان المشروعات (الرسمي)</span>
+                <span class="px-2 py-0.5 rounded-full bg-dark-950/60 text-[11px] font-mono" id="nav-master-count">0</span>
+            </button>
+
+            <button onclick="switchView('invoices')" id="tabBtn-invoices" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap">
+                <i class="fa-solid fa-receipt"></i>
+                <span>متابعة المستخلصات والكتائب</span>
+                <span class="px-2 py-0.5 rounded-full bg-dark-950/60 text-[11px] font-mono" id="nav-invoices-count">0</span>
+            </button>
+
+            <button onclick="switchView('insurance')" id="tabBtn-insurance" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>موقف التأمينات والتعلية</span>
+                <span class="px-2 py-0.5 rounded-full bg-dark-950/60 text-[11px] font-mono" id="nav-insurance-count">0</span>
+            </button>
+
+            <button onclick="switchView('dashboard')" id="tabBtn-dashboard" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>التحليل الشامل والمطابقة</span>
+            </button>
+        </nav>
+
+        <!-- Status Indicators -->
+        <div class="flex items-center gap-2 text-[11px] font-mono">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-sky-400" id="dot-master"></span>
+                البيان: <span id="status-master-text">متصل</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400" id="dot-invoices"></span>
+                المستخلصات: <span id="status-invoices-text">متصل</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400" id="dot-insurance"></span>
+                التأمينات: <span id="status-insurance-text">متصل</span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: بيان المشروعات الرسمي -->
+    <!-- ========================================== -->
+    <div id="view-master" class="space-y-6">
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي المشروعات التعاقدية</span>
+                    <span class="p-2 rounded-xl bg-sky-500/10 text-sky-400 text-xs"><i class="fa-solid fa-diagram-project"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-white font-mono" id="master-total-count">0</div>
+                <div class="text-xs text-slate-400 mt-2">مشروع مسجل بالشيت مباشرة</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي القيمة التعاقدية</span>
+                    <span class="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 text-xs"><i class="fa-solid fa-coins"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-cyan-400 font-mono" id="master-total-val">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">إجمالي العقود والمقايسات</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">متوسط قيمة المشروع</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-chart-line"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-emerald-400 font-mono" id="master-avg-val">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">متوسط حجم العملية</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">أعلى مقايسة مسجلة</span>
+                    <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 text-xs"><i class="fa-solid fa-trophy"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-amber-300 font-mono" id="master-max-val">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">أكبر مقايسة مسندة</div>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="glass-panel rounded-2xl p-4 space-y-3">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="masterSearchInput" oninput="applyMasterFilters()" placeholder="بحث برقم المشروع (مثال: 81421103)، المقايسة، الموقع، أو الكتيبة..." class="w-full bg-dark-950 border border-dark-700 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white focus:outline-none focus:border-sky-500">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="masterFilterSite" onchange="applyMasterFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع المواقع العامة</option>
+                    </select>
+
+                    <select id="masterFilterBattalion" onchange="applyMasterFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع الكتائب</option>
+                    </select>
+
+                    <button onclick="resetMasterFilters()" class="p-2.5 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs transition border border-dark-700">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Master Projects Table -->
+        <section class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-dark-700">
+            <div class="p-4 border-b border-dark-700 flex flex-wrap items-center justify-between gap-2 bg-dark-900/60">
+                <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-table-list text-sky-400"></i>
+                    جدول بيان المشروعات التعاقدية (مطابق للرسمي)
+                </h3>
+                <span class="text-xs text-slate-400 font-mono" id="masterTableCounter">عرض 0 من 0</span>
+            </div>
+
+            <div class="overflow-x-auto max-h-[700px] overflow-y-auto">
+                <table class="w-full text-right text-xs sm:text-sm border-collapse">
+                    <thead class="bg-dark-950 text-slate-300 sticky top-0 z-10 border-b border-dark-700 font-bold">
+                        <tr>
+                            <th class="p-3 text-center">م</th>
+                            <th class="p-3 text-center bg-dark-900/95 text-sky-400 border-x border-dark-700/50">رقم المشروع</th>
+                            <th class="p-3 min-w-[280px]">اسم المشروع (مقايسة)</th>
+                            <th class="p-3 text-center">تاريخ الإخطار</th>
+                            <th class="p-3 text-center">مدة التنفيذ</th>
+                            <th class="p-3 text-center">موقف الخفض والتجاوز</th>
+                            <th class="p-3 text-left font-mono">قيمة المشروع</th>
+                            <th class="p-3 text-center">موقف الضريبة</th>
+                            <th class="p-3 text-center">الكتيبة</th>
+                            <th class="p-3 text-center bg-dark-900/95 text-cyan-300 border-x border-dark-700/50">الموقع العام</th>
+                            <th class="p-3 text-center">ربط المنظومة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masterTableBody" class="divide-y divide-dark-700/60 font-medium"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: موقف المستخلصات والكتائب -->
+    <!-- ========================================== -->
+    <div id="view-invoices" class="space-y-6 hidden">
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي مستخلصات المتابعة</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-receipt"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-white font-mono" id="inv-total-count">0</div>
+                <div class="text-xs text-slate-400 mt-2">سجل مستخلص قيد العمل</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">المنصرف الفعلي المحصل</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-emerald-400 font-mono" id="inv-total-paid">0 ج.م</div>
+                <div class="text-xs text-emerald-400/80 mt-2 flex items-center justify-between">
+                    <span>نسبة الصرف:</span>
+                    <span id="inv-paid-ratio" class="font-mono">0%</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">مستخلصات جارية</span>
+                    <span class="p-2 rounded-xl bg-sky-500/10 text-sky-400 text-xs"><i class="fa-solid fa-hourglass-half"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-sky-400 font-mono" id="inv-pending-count">0</div>
+                <div class="text-xs text-slate-400 mt-2">بالمقرات والكتائب والإدارة</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">متوقف واستيفاء</span>
+                    <span class="p-2 rounded-xl bg-rose-500/10 text-rose-400 text-xs"><i class="fa-solid fa-circle-exclamation"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-rose-400 font-mono" id="inv-issues-count">0</div>
+                <div class="text-xs text-amber-400 mt-2">تتطلب استيفاء أو سداد</div>
+            </div>
+        </section>
+
+        <!-- Invoices Filter Bar -->
+        <section class="glass-panel rounded-2xl p-4 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="invSearchInput" oninput="applyInvoiceFilters()" placeholder="بحث برقم المشروع، العملية، الكتيبة، أو الملاحظات..." class="w-full bg-dark-950 border border-dark-700 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="invFilterLocation" onchange="applyInvoiceFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع أماكن المستخلص</option>
+                        <option value="تم الصرف">تم الصرف</option>
+                        <option value="الكتيبة">الكتيبة</option>
+                        <option value="الادارة">الإدارة / العباسية</option>
+                        <option value="المركزية">المركزية</option>
+                        <option value="150">اللواء 150</option>
+                        <option value="متوقف">متوقف / استيفاء</option>
+                    </select>
+
+                    <select id="invFilterBattalion" onchange="applyInvoiceFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع الكتائب</option>
+                    </select>
+
+                    <button onclick="resetInvoiceFilters()" class="p-2.5 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs transition border border-dark-700">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Invoices Table -->
+        <section class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-dark-700">
+            <div class="p-4 border-b border-dark-700 flex items-center justify-between bg-dark-900/60">
+                <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-money-bill-transfer text-emerald-400"></i>
+                    جدول حركة المستخلصات التفصيلي
+                </h3>
+                <span class="text-xs text-slate-400 font-mono" id="invTableCounter">عرض 0 من 0</span>
+            </div>
+
+            <div class="overflow-x-auto max-h-[700px] overflow-y-auto">
+                <table class="w-full text-right text-xs sm:text-sm border-collapse">
+                    <thead class="bg-dark-950 text-slate-300 sticky top-0 z-10 border-b border-dark-700 font-bold">
+                        <tr>
+                            <th class="p-3 text-center">م</th>
+                            <th class="p-3 text-center text-emerald-400 bg-dark-900/70 border-x border-dark-700/50">رقم المشروع</th>
+                            <th class="p-3 min-w-[240px]">اسم العملية</th>
+                            <th class="p-3 text-center">الكتيبة</th>
+                            <th class="p-3 text-center">النوع</th>
+                            <th class="p-3 text-center font-mono">النسبة</th>
+                            <th class="p-3 text-left font-mono text-amber-300">قيمة المستخلص</th>
+                            <th class="p-3 text-left font-mono text-emerald-400">ما تم صرفه</th>
+                            <th class="p-3 text-center">مكان الأوراق</th>
+                            <th class="p-3 min-w-[180px]">آخر موقف</th>
+                            <th class="p-3 text-center">ربط المنظومة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody" class="divide-y divide-dark-700/60 font-medium"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: موقف التأمينات الاجتماعية والتعلية -->
+    <!-- ========================================== -->
+    <div id="view-insurance" class="space-y-6 hidden">
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي ملفات التأمينات</span>
+                    <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 text-xs"><i class="fa-solid fa-folder-open"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-white font-mono" id="ins-total-count">0</div>
+                <div class="text-xs text-slate-400 mt-2">عملية مسجلة بالتأمينات</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي مبالغ التعلية</span>
+                    <span class="p-2 rounded-xl bg-rose-500/10 text-rose-400 text-xs"><i class="fa-solid fa-arrow-down-short-wide"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-rose-400 font-mono" id="ins-total-retention">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">إجمالي المحتجز كتعلية</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي سداد التأمينات</span>
+                    <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs"><i class="fa-solid fa-receipt"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-indigo-300 font-mono" id="ins-total-paid">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">المسدد لمكاتب التأمينات</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي رد التعلية</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-emerald-400 font-mono" id="ins-total-released">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">المسترد بعد صدور الشهادات</div>
+            </div>
+        </section>
+
+        <!-- Insurance Filter Bar -->
+        <section class="glass-panel rounded-2xl p-4 space-y-3">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="insSearchInput" oninput="applyInsuranceFilters()" placeholder="بحث برقم المشروع، رقم الملف (مثال: 2360/2020)، اسم المشروع، أو الملاحظات..." class="w-full bg-dark-950 border border-dark-700 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="insFilterStatus" onchange="applyInsuranceFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع الحالات والملاحظات</option>
+                        <option value="تم اصدار شهادة">تم إصدار شهادة</option>
+                        <option value="تم الرد">تم رد التعلية</option>
+                        <option value="يلزم الدفع">يلزم الدفع</option>
+                        <option value="بدون تعلية">بدون تعلية</option>
+                    </select>
+
+                    <button onclick="resetInsuranceFilters()" class="p-2.5 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs transition border border-dark-700">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insurance Table -->
+        <section class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-dark-700">
+            <div class="p-4 border-b border-dark-700 flex items-center justify-between bg-dark-900/60">
+                <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-amber-400"></i>
+                    جدول موقف التأمينات الاجتماعية والتعلية المستردة
+                </h3>
+                <span class="text-xs text-slate-400 font-mono" id="insTableCounter">عرض 0 من 0</span>
+            </div>
+
+            <div class="overflow-x-auto max-h-[700px] overflow-y-auto">
+                <table class="w-full text-right text-xs sm:text-sm border-collapse">
+                    <thead class="bg-dark-950 text-slate-300 sticky top-0 z-10 border-b border-dark-700 font-bold">
+                        <tr>
+                            <th class="p-3 text-center">م</th>
+                            <th class="p-3 text-center text-amber-400 bg-dark-900/70 border-x border-dark-700/50">رقم المشروع</th>
+                            <th class="p-3 min-w-[260px]">اسم المشروع</th>
+                            <th class="p-3 text-center font-mono text-sky-400">رقم الملف</th>
+                            <th class="p-3 text-center">نوع المستخلص</th>
+                            <th class="p-3 text-left font-mono text-rose-400">قيمة التعلية</th>
+                            <th class="p-3 text-left font-mono text-indigo-300">قيمة التأمينات</th>
+                            <th class="p-3 text-left font-mono text-emerald-400">رد تعلية</th>
+                            <th class="p-3 min-w-[200px]">الملاحظات والموقف</th>
+                            <th class="p-3 text-center font-mono">تاريخ الشهادة</th>
+                            <th class="p-3 text-center">ربط العقد</th>
+                        </tr>
+                    </thead>
+                    <tbody id="insuranceTableBody" class="divide-y divide-dark-700/60 font-medium"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 4: التحليل الشامل والربط المالي -->
+    <!-- ========================================== -->
+    <div id="view-dashboard" class="space-y-6 hidden">
+        <section class="glass-panel rounded-2xl p-6 bg-gradient-to-r from-sky-950/40 via-dark-900 to-emerald-950/40 border border-dark-700">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-scale-balanced text-emerald-400"></i>
+                        المطابقة الشاملة (العقود ⟷ المستخلصات ⟷ التأمينات)
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                        ربط سحابي تلقائي يجمع بين قيم الأوامر والمقايسات الصادرة، والمنصرف الفعلي في حسابات المستخلصات، وموقف مبالغ التعلية وسداد التأمينات الاجتماعية مع استرداداتها.
+                    </p>
+                </div>
+                <div class="flex items-center gap-4 bg-dark-950/80 p-4 rounded-xl border border-dark-700">
+                    <div class="text-center">
+                        <div class="text-[11px] text-slate-400">نسبة الصرف الكلية</div>
+                        <div class="text-2xl font-black text-emerald-400 font-mono mt-1" id="dash-overall-ratio">0%</div>
+                    </div>
+                    <div class="h-10 w-px bg-dark-700"></div>
+                    <div class="text-center">
+                        <div class="text-[11px] text-slate-400">المتبقي للتحصيل</div>
+                        <div class="text-sm font-bold text-cyan-300 font-mono mt-1" id="dash-remaining-val">0 ج.م</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Grid -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <h3 class="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-sky-400"></i>
+                    توزيع المشروعات حسب المدد التنفيذية
+                </h3>
+                <div class="relative h-64 w-full flex items-center justify-center">
+                    <canvas id="dashDurationChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <h3 class="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-amber-400"></i>
+                    موقف شهادات وسداد التأمينات
+                </h3>
+                <div class="relative h-64 w-full flex items-center justify-center">
+                    <canvas id="dashInsuranceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 lg:col-span-2 flex flex-col justify-between">
+                <h3 class="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-column text-amber-400"></i>
+                    مقارنة القيمة التعاقدية مقابل المنصرف الفعلي لكل كتيبة
+                </h3>
+                <div class="relative h-72 w-full flex items-center justify-center">
+                    <canvas id="dashBattalionCompareChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</main>
+
+<!-- Details Modal -->
+<div id="detailsModal" class="fixed inset-0 bg-dark-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel bg-dark-900 border border-dark-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative">
+        <button onclick="closeDetailsModal()" class="absolute left-4 top-4 text-slate-400 hover:text-white p-2 rounded-xl bg-dark-800 transition">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <div id="detailsModalContent"></div>
+    </div>
+</div>
+
+<script>
+    // ========================================================
+    // 1. CONSTANTS & CLOUD DATA SOURCES (DIRECT ZERO-CONFIG)
+    // ========================================================
+
+    // 1. شيت بيان المشروعات الرسمي المباشر (المثبت نهائياً)
+    const MASTER_DOC_ID = "168HknUhZ3fwE0VaHR1Z3nesJ5VZfrA43nv8fz4TAWP4";
+
+    // 2. شيت المستخلصات والمتابعة المالية
+    const INVOICES_DOC_ID = "1K5ktCu_XCkg9SC5ybPt88RTjVgqkhz-JWHu-Gq35irE";
+
+    // 3. شيت موقف التأمينات الاجتماعية والتعلية
+    const INSURANCE_DOC_ID = "188Pyva__oIEu4h1CrVDGnMdnELq0mcqJX8vWPztWMzI";
+
+    // State Storage
+    let masterProjects = [];
+    let invoiceProjects = [];
+    let insuranceProjects = [];
+    let activeView = 'master';
+
+    // Charts
+    let durationChart = null;
+    let insuranceChart = null;
+    let battalionCompareChart = null;
+
+    function showSyncToast(message) {
+        const toast = document.getElementById('syncToast');
+        const text = document.getElementById('syncToastText');
+        if (!toast || !text) return;
+        text.innerText = message;
+        toast.className = `fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-100 pointer-events-auto`;
+        setTimeout(() => {
+            toast.className = `fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none`;
+        }, 3000);
+    }
+
+    // ========================================================
+    // 2. UNIVERSAL GVIZ JSONP ENGINE (CORS-FREE)
+    // ========================================================
+    function fetchViaGvizJsonp(docId, callback) {
+        if (!docId) { callback(null); return; }
+        const callbackName = 'gvizCallback_' + Math.floor(Math.random() * 10000000);
+        let completed = false;
+
+        window[callbackName] = function(resp) {
+            completed = true;
+            delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+            if (resp && resp.table) {
+                const table = resp.table;
+                const rows = (table.rows || []).map(r => {
+                    if (!r || !r.c) return [];
+                    return r.c.map(c => c ? (c.f !== undefined && c.f !== null ? c.f : (c.v !== undefined && c.v !== null ? c.v : '')) : '');
+                });
+                const cols = (table.cols || []).map(c => c && (c.label || c.id) ? c.label || c.id : '');
+                callback([cols, ...rows]);
+            } else {
+                callback(null);
+            }
+        };
+
+        const script = document.createElement('script');
+        script.src = `https://docs.google.com/spreadsheets/d/${docId}/gviz/tq?tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
+        script.onerror = function() {
+            if (!completed) {
+                completed = true;
+                delete window[callbackName];
+                if (script.parentNode) script.parentNode.removeChild(script);
+                callback(null);
+            }
+        };
+
+        document.head.appendChild(script);
+
+        setTimeout(() => {
+            if (!completed) {
+                completed = true;
+                delete window[callbackName];
+                if (script.parentNode) script.parentNode.removeChild(script);
+                callback(null);
+            }
+        }, 6000);
+    }
+
+    // ========================================================
+    // 3. SYNCHRONIZATION ENGINE
+    // ========================================================
+    async function syncAllDataSources(isUser = false) {
+        const icon = document.getElementById('globalSyncIcon');
+        if (icon) icon.classList.add('fa-spin');
+
+        if (isUser) showSyncToast('جاري تحديث البيانات السحابية مباشرة...');
+
+        const [mOk, iOk, insOk] = await Promise.all([
+            fetchMasterData(),
+            fetchInvoicesData(),
+            fetchInsuranceData()
+        ]);
+
+        if (icon) icon.classList.remove('fa-spin');
+
+        const now = new Date();
+        document.getElementById('lastSyncTime').innerText = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        document.getElementById('status-master-text').innerText = mOk ? 'متصل ومحدّث' : 'فشل الربط';
+        document.getElementById('dot-master').className = `w-1.5 h-1.5 rounded-full ${mOk ? 'bg-emerald-400' : 'bg-rose-400'}`;
+
+        document.getElementById('status-invoices-text').innerText = iOk ? 'متصل ومحدّث' : 'فشل الربط';
+        document.getElementById('dot-invoices').className = `w-1.5 h-1.5 rounded-full ${iOk ? 'bg-emerald-400' : 'bg-rose-400'}`;
+
+        document.getElementById('status-insurance-text').innerText = insOk ? 'متصل ومحدّث' : 'فشل الربط';
+        document.getElementById('dot-insurance').className = `w-1.5 h-1.5 rounded-full ${insOk ? 'bg-emerald-400' : 'bg-rose-400'}`;
+
+        refreshMasterUI();
+        refreshInvoiceUI();
+        refreshInsuranceUI();
+        refreshDashboardUI();
+
+        if (isUser) {
+            showSyncToast(`تم التحديث بنجاح (${masterProjects.length} مشروع | ${invoiceProjects.length} مستخلص | ${insuranceProjects.length} ملف تأمين)`);
+        }
+    }
+
+    function fetchMasterData() {
+        return new Promise((resolve) => {
+            fetchViaGvizJsonp(MASTER_DOC_ID, (matrix) => {
+                if (matrix && parseMasterMatrix(matrix)) resolve(true);
+                else resolve(false);
+            });
+        });
+    }
+
+    function fetchInvoicesData() {
+        return new Promise((resolve) => {
+            fetchViaGvizJsonp(INVOICES_DOC_ID, (matrix) => {
+                if (matrix && parseInvoicesMatrix(matrix)) resolve(true);
+                else resolve(false);
+            });
+        });
+    }
+
+    function fetchInsuranceData() {
+        return new Promise((resolve) => {
+            fetchViaGvizJsonp(INSURANCE_DOC_ID, (matrix) => {
+                if (matrix && parseInsuranceMatrix(matrix)) resolve(true);
+                else resolve(false);
+            });
+        });
+    }
+
+    // ========================================================
+    // 4. PARSERS FOR ALL SHEETS
+    // ========================================================
+    function cleanText(t) {
+        if (!t && t !== 0) return '';
+        return String(t).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function formatEGP(val) {
+        if (!val || val === '-' || val === '') return '0 ج.م';
+        const clean = String(val).replace(/[^0-9.-]/g, '');
+        const num = parseFloat(clean);
+        if (isNaN(num)) return val;
+        return num.toLocaleString('ar-EG') + ' ج.م';
+    }
+
+    function parseMasterMatrix(rows) {
+        if (!rows || rows.length === 0) return false;
+        const maxCols = Math.max(...rows.slice(0, 10).map(r => (r ? r.length : 0)));
+        const colHeaders = {};
+
+        for (let c = 0; c < maxCols; c++) {
+            let combined = '';
+            for (let r = 0; r < Math.min(rows.length, 6); r++) {
+                if (rows[r] && rows[r][c]) combined += ' ' + cleanText(rows[r][c]);
+            }
+            colHeaders[c] = cleanText(combined);
+        }
+
+        function findCol(keywords) {
+            for (let c = 0; c < maxCols; c++) {
+                const text = colHeaders[c] || '';
+                if (keywords.some(k => text.includes(k))) return c;
+            }
+            return -1;
+        }
+
+        let codeCol = findCol(['رقم المشروع', 'فولدر المشروع', 'فولدر']);
+        let nameCol = findCol(['اسم المشروع', 'المشروع (مقايسة)', 'مقايسة']);
+        let dateCol = findCol(['تاريخ الاخطار', 'تاريخ الإخطار', 'إخطار']);
+        let daysCol = findCol(['(يوم)', 'يوم']);
+        let monthsCol = findCol(['(شهور)', 'شهور']);
+        let notesCol = findCol(['موقف مذكرة الخفض', 'الخفض والتجاوز']);
+        let valCol = findCol(['قيمة المشروع', 'المشروع (عقد)']);
+        let taxCol = findCol(['موقف الضريب', 'الضريب']);
+        let batCol = findCol(['الكتيبة', 'الكتيبه']);
+        let siteCol = findCol(['الموقع العام', 'الموقع']);
+
+        if (codeCol === -1) codeCol = 1;
+        if (nameCol === -1) nameCol = 2;
+        if (dateCol === -1) dateCol = 3;
+        if (monthsCol === -1) monthsCol = 4;
+        if (daysCol === -1) daysCol = 5;
+        if (notesCol === -1) notesCol = 6;
+        if (valCol === -1) valCol = 7;
+        if (taxCol === -1) taxCol = 8;
+        if (batCol === -1) batCol = 9;
+        if (siteCol === -1) siteCol = 10;
+
+        const list = [];
+        let seq = 1;
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const pCode = cleanText(row[codeCol]);
+            const pName = cleanText(row[nameCol]);
+            const pSite = cleanText(row[siteCol]);
+            let pBat = cleanText(row[batCol]);
+
+            if (!pName && !pSite && !pCode) continue;
+            if (pCode.includes('رقم المشروع') || pName.includes('بيان مشاريع') || pName.includes('اجمالى')) continue;
+
+            if (pBat && /^[0-9]+$/.test(pBat)) pBat = 'ك' + pBat;
+
+            const valNum = parseFloat(String(row[valCol] || '').replace(/[^0-9.-]/g, '')) || 0;
+            const rawMonths = cleanText(row[monthsCol]);
+            const rawDays = cleanText(row[daysCol]);
+
+            let durStr = [];
+            if (rawMonths && parseFloat(rawMonths) > 0) durStr.push(`${rawMonths} شهر`);
+            if (rawDays && parseFloat(rawDays) > 0) durStr.push(`(${rawDays} يوم)`);
+
+            list.push({
+                seq: seq++,
+                code: pCode || `PROJ-${seq}`,
+                name: pName || 'مشروع بدون اسم',
+                date: cleanText(row[dateCol]) || 'غير محدد',
+                durationFormatted: durStr.length > 0 ? durStr.join(' ') : 'غير محدد',
+                notesStatus: cleanText(row[notesCol]) || 'لا يوجد',
+                value: valNum,
+                taxStatus: cleanText(row[taxCol]) || 'غير محدد',
+                generalSite: pSite || 'غير محدد',
+                battalion: pBat || 'غير محدد'
+            });
+        }
+
+        if (list.length > 0) { masterProjects = list; return true; }
+        return false;
+    }
+
+    function parseInvoicesMatrix(rows) {
+        if (!rows || rows.length === 0) return false;
+        let headerRowIdx = -1;
+        let col = {};
+
+        for (let i = 0; i < Math.min(rows.length, 12); i++) {
+            const r = rows[i].map(c => cleanText(c));
+            if (r.some(c => c.includes('رقم المشروع') || c.includes('اسم المشروع') || c.includes('اسم المشرووع'))) {
+                headerRowIdx = i;
+                r.forEach((name, idx) => { if (name) col[name] = idx; });
+                break;
+            }
+        }
+
+        function findCol(aliases, def) {
+            for (const alias of aliases) {
+                for (const k of Object.keys(col)) {
+                    if (k.includes(alias)) return col[k];
+                }
+            }
+            return def;
+        }
+
+        let idCol = findCol(['رقم المشروع', 'رقم المشرووع'], 2);
+        let nameCol = findCol(['اسم المشرووع', 'اسم المشروع'], 3);
+        let projValCol = findCol(['قيمة المشروع', 'اجمالى'], 5);
+        let typeCol = findCol(['نوع الموقف', 'نوع المستخلص'], 6);
+        let certValCol = findCol(['قيمة المستخلص'], 7);
+        let ratioCol = findCol(['نسبة المستخلص', 'النسبة'], 8);
+        let paidCol = findCol(['ما تم صرفه', 'تم صرفه'], 9);
+        let statusCol = findCol(['اخر موقف', 'الموقف', 'ملاحظات'], 10);
+        let batCol = findCol(['الكتيبة', 'الكتيبه'], 11);
+        let locCol = findCol(['مكان المستخلص', 'المكان'], 12);
+
+        if (headerRowIdx === -1) headerRowIdx = 3;
+        const list = [];
+        let seq = 1;
+
+        for (let i = headerRowIdx + 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const pId = cleanText(row[idCol]);
+            const pName = cleanText(row[nameCol]);
+            if (!pId || pId === '-' || pId.includes('اجمالى') || pId.includes('موقف المشروعات')) continue;
+
+            let battalion = cleanText(row[batCol]) || 'غير محدد';
+            if (/^[0-9]+$/.test(battalion)) battalion = 'ك' + battalion;
+
+            list.push({
+                seq: seq++,
+                id: pId,
+                name: pName || `مشروع ${pId}`,
+                type: cleanText(row[typeCol]) || 'مستخلص',
+                proj_val: parseFloat(String(row[projValCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                cert_val: parseFloat(String(row[certValCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                ratio: cleanText(row[ratioCol]) || '-',
+                paid: parseFloat(String(row[paidCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                status: cleanText(row[statusCol]) || '-',
+                battalion: battalion,
+                location: cleanText(row[locCol]) || '-'
+            });
+        }
+
+        if (list.length > 0) { invoiceProjects = list; return true; }
+        return false;
+    }
+
+    function parseInsuranceMatrix(rows) {
+        if (!rows || rows.length === 0) return false;
+        let headerRowIdx = -1;
+        let col = {};
+
+        for (let i = 0; i < Math.min(rows.length, 10); i++) {
+            const r = rows[i].map(c => cleanText(c));
+            if (r.some(c => c.includes('رقم المشروع') || c.includes('رقم الملف') || c.includes('تأمين'))) {
+                headerRowIdx = i;
+                r.forEach((name, idx) => { if (name) col[name] = idx; });
+                break;
+            }
+        }
+
+        function findCol(aliases, def) {
+            for (const alias of aliases) {
+                for (const k of Object.keys(col)) {
+                    if (k.includes(alias)) return col[k];
+                }
+            }
+            return def;
+        }
+
+        let codeCol = findCol(['رقم المشروع', 'كود'], 0);
+        let nameCol = findCol(['اسم المشروع', 'بيان'], 1);
+        let fileCol = findCol(['رقم الملف', 'الملف'], 2);
+        let typeCol = findCol(['نوع المستخلص', 'النوع'], 3);
+        let retCol = findCol(['قيمة التعلية', 'التعلية'], 4);
+        let insValCol = findCol(['قيمة التأمينات', 'التأمينات'], 5);
+        let relCol = findCol(['رد تعلية', 'الرد'], 7);
+        let notesCol = findCol(['ملاحظات', 'الموقف'], 8);
+        let dateCol = findCol(['تاريخ الشهادة', 'تاريخ'], 9);
+
+        if (headerRowIdx === -1) headerRowIdx = 0;
+        const list = [];
+        let seq = 1;
+
+        for (let i = headerRowIdx + 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const pCode = cleanText(row[codeCol]);
+            const pName = cleanText(row[nameCol]);
+            if (!pCode && !pName) continue;
+            if (pCode.includes('رقم المشروع') || pName.includes('اسم المشروع')) continue;
+
+            list.push({
+                seq: seq++,
+                code: pCode,
+                name: pName || 'غير محدد',
+                fileNo: cleanText(row[fileCol]) || '-',
+                certType: cleanText(row[typeCol]) || '-',
+                retention: parseFloat(String(row[retCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                insuranceVal: parseFloat(String(row[insValCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                releasedVal: parseFloat(String(row[relCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                notes: cleanText(row[notesCol]) || '-',
+                certDate: cleanText(row[dateCol]) || '-'
+            });
+        }
+
+        if (list.length > 0) { insuranceProjects = list; return true; }
+        return false;
+    }
+
+    // ========================================================
+    // 5. VIEW NAVIGATION
+    // ========================================================
+    function switchView(viewName) {
+        activeView = viewName;
+        ['master', 'invoices', 'insurance', 'dashboard'].forEach(v => {
+            const btn = document.getElementById(`tabBtn-${v}`);
+            const sec = document.getElementById(`view-${v}`);
+            if (v === viewName) {
+                btn.className = `flex items-center gap-2 px-4 py-2 rounded-xl font-bold ${v === 'invoices' ? 'bg-emerald-600' : v === 'insurance' ? 'bg-amber-600' : 'bg-sky-600'} text-white transition whitespace-nowrap shadow-md`;
+                sec.classList.remove('hidden');
+            } else {
+                btn.className = 'flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap';
+                sec.classList.add('hidden');
+            }
+        });
+
+        if (viewName === 'dashboard') renderDashboardCharts();
+    }
+
+    // ========================================================
+    // 6. UI RENDERERS
+    // ========================================================
+    function refreshMasterUI() {
+        document.getElementById('nav-master-count').innerText = masterProjects.length;
+        document.getElementById('master-total-count').innerText = masterProjects.length;
+
+        const totalVal = masterProjects.reduce((s, p) => s + p.value, 0);
+        document.getElementById('master-total-val').innerText = formatEGP(totalVal);
+        document.getElementById('master-avg-val').innerText = formatEGP(masterProjects.length ? totalVal / masterProjects.length : 0);
+        document.getElementById('master-max-val').innerText = formatEGP(masterProjects.reduce((m, p) => Math.max(m, p.value), 0));
+
+        const siteSelect = document.getElementById('masterFilterSite');
+        const currentSite = siteSelect.value;
+        const sites = [...new Set(masterProjects.map(p => p.generalSite).filter(s => s && s !== 'غير محدد'))].sort();
+        siteSelect.innerHTML = '<option value="">جميع المواقع العامة</option>' + sites.map(s => `<option value="${s}" ${s === currentSite ? 'selected' : ''}>${s}</option>`).join('');
+
+        const batSelect = document.getElementById('masterFilterBattalion');
+        const currentBat = batSelect.value;
+        const bats = [...new Set(masterProjects.map(p => p.battalion).filter(b => b && b !== 'غير محدد'))].sort();
+        batSelect.innerHTML = '<option value="">جميع الكتائب</option>' + bats.map(b => `<option value="${b}" ${b === currentBat ? 'selected' : ''}>${b}</option>`).join('');
+
+        renderMasterTable();
+    }
+
+    function renderMasterTable() {
+        const tbody = document.getElementById('masterTableBody');
+        const search = document.getElementById('masterSearchInput').value.trim().toLowerCase();
+        const siteFilter = document.getElementById('masterFilterSite').value;
+        const batFilter = document.getElementById('masterFilterBattalion').value;
+
+        const filtered = masterProjects.filter(p => {
+            if (siteFilter && p.generalSite !== siteFilter) return false;
+            if (batFilter && p.battalion !== batFilter) return false;
+            if (search) {
+                const c = `${p.code} ${p.name} ${p.generalSite} ${p.battalion} ${p.date}`.toLowerCase();
+                if (!c.includes(search)) return false;
+            }
+            return true;
+        });
+
+        document.getElementById('masterTableCounter').innerText = `عرض ${filtered.length} من ${masterProjects.length}`;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">لا توجد مشروعات مطابقة</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(item => {
+            const hasInv = invoiceProjects.some(inv => inv.id === item.code);
+            const hasIns = insuranceProjects.some(ins => ins.code === item.code);
+
+            return `
+                <tr class="hover:bg-dark-800/40 transition">
+                    <td class="p-3 text-center text-slate-500 font-mono text-xs font-bold">${item.seq}</td>
+                    <td class="p-3 text-center font-mono font-bold text-sky-400 whitespace-nowrap bg-dark-900/60 border-x border-dark-700/40 cursor-pointer" onclick="showMasterDetails(${item.seq})">
+                        ${item.code}
+                    </td>
+                    <td class="p-3 max-w-sm">
+                        <div class="font-bold text-white hover:text-sky-300 cursor-pointer" onclick="showMasterDetails(${item.seq})">
+                            ${item.name}
+                        </div>
+                    </td>
+                    <td class="p-3 text-center font-mono text-xs text-slate-300">${item.date}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-xs">${item.durationFormatted}</span>
+                    </td>
+                    <td class="p-3 text-center text-xs text-slate-400">${item.notesStatus}</td>
+                    <td class="p-3 font-mono text-xs text-left font-bold text-cyan-300">${formatEGP(item.value)}</td>
+                    <td class="p-3 text-center text-xs text-slate-300">${item.taxStatus}</td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-xs">${item.battalion}</span></td>
+                    <td class="p-3 text-center bg-dark-900/60 border-x border-dark-700/40"><span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 text-xs">${item.generalSite}</span></td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="crossLinkToInvoice('${item.code}')" class="p-1.5 rounded-lg ${hasInv ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30' : 'bg-dark-800 text-slate-600'} text-xs" title="المستخلصات"><i class="fa-solid fa-receipt"></i></button>
+                            <button onclick="crossLinkToInsurance('${item.code}')" class="p-1.5 rounded-lg ${hasIns ? 'bg-amber-600/20 text-amber-300 border border-amber-500/30' : 'bg-dark-800 text-slate-600'} text-xs" title="التأمينات والتعلية"><i class="fa-solid fa-shield-halved"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function applyMasterFilters() { renderMasterTable(); }
+    function resetMasterFilters() {
+        document.getElementById('masterSearchInput').value = '';
+        document.getElementById('masterFilterSite').value = '';
+        document.getElementById('masterFilterBattalion').value = '';
+        renderMasterTable();
+    }
+
+    function refreshInvoiceUI() {
+        document.getElementById('nav-invoices-count').innerText = invoiceProjects.length;
+        document.getElementById('inv-total-count').innerText = invoiceProjects.length;
+
+        const completed = invoiceProjects.filter(p => p.location.includes('تم الصرف') || p.status.includes('تم الصرف')).length;
+        const totalPaid = invoiceProjects.reduce((s, p) => s + p.paid, 0);
+        const totalContract = invoiceProjects.reduce((s, p) => s + p.proj_val, 0);
+
+        document.getElementById('inv-total-paid').innerText = formatEGP(totalPaid);
+        document.getElementById('inv-paid-ratio').innerText = totalContract > 0 ? `${((totalPaid / totalContract) * 100).toFixed(1)}%` : '0%';
+        document.getElementById('inv-pending-count').innerText = invoiceProjects.length - completed;
+        document.getElementById('inv-issues-count').innerText = invoiceProjects.filter(p => (p.status + p.location).includes('متوقف') || (p.status + p.location).includes('استيفاء')).length;
+
+        const batSelect = document.getElementById('invFilterBattalion');
+        const currentBat = batSelect.value;
+        const bats = [...new Set(invoiceProjects.map(p => p.battalion).filter(b => b && b !== 'غير محدد'))].sort();
+        batSelect.innerHTML = '<option value="">جميع الكتائب</option>' + bats.map(b => `<option value="${b}" ${b === currentBat ? 'selected' : ''}>${b}</option>`).join('');
+
+        renderInvoicesTable();
+    }
+
+    function renderInvoicesTable() {
+        const tbody = document.getElementById('invoicesTableBody');
+        const search = document.getElementById('invSearchInput').value.trim().toLowerCase();
+        const loc = document.getElementById('invFilterLocation').value;
+        const bat = document.getElementById('invFilterBattalion').value;
+
+        const filtered = invoiceProjects.filter(p => {
+            if (loc && !p.location.includes(loc) && !p.status.includes(loc)) return false;
+            if (bat && !p.battalion.includes(bat)) return false;
+            if (search && !`${p.id} ${p.name} ${p.battalion} ${p.status}`.toLowerCase().includes(search)) return false;
+            return true;
+        });
+
+        document.getElementById('invTableCounter').innerText = `عرض ${filtered.length} من ${invoiceProjects.length}`;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">لا توجد مستخلصات مطابقة</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(item => `
+            <tr class="hover:bg-dark-800/40 transition">
+                <td class="p-3 text-center text-slate-500 font-mono text-xs font-bold">${item.seq}</td>
+                <td class="p-3 text-center font-mono font-bold text-emerald-400 bg-dark-900/70 border-x border-dark-700/50 cursor-pointer" onclick="showInvoiceDetails('${item.id}', ${item.seq})">${item.id}</td>
+                <td class="p-3 max-w-xs truncate font-bold text-white cursor-pointer" onclick="showInvoiceDetails('${item.id}', ${item.seq})">${item.name}</td>
+                <td class="p-3 text-center"><span class="px-2 py-0.5 rounded bg-dark-800 text-slate-300 text-xs">${item.battalion}</span></td>
+                <td class="p-3 text-center text-xs text-slate-300">${item.type}</td>
+                <td class="p-3 text-center font-mono text-xs text-cyan-400 font-bold">${item.ratio}</td>
+                <td class="p-3 font-mono text-xs text-left text-amber-300 font-bold">${formatEGP(item.cert_val)}</td>
+                <td class="p-3 font-mono text-xs text-left text-emerald-400 font-bold">${formatEGP(item.paid)}</td>
+                <td class="p-3 text-center text-xs">${item.location}</td>
+                <td class="p-3 max-w-xs truncate text-xs text-slate-300">${item.status}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="crossLinkToMaster('${item.id}')" class="p-1.5 rounded-lg bg-sky-600/20 text-sky-300 border border-sky-500/30 text-xs" title="العقد بالبيان"><i class="fa-solid fa-file-contract"></i></button>
+                        <button onclick="crossLinkToInsurance('${item.id}')" class="p-1.5 rounded-lg bg-amber-600/20 text-amber-300 border border-amber-500/30 text-xs" title="موقف التأمينات"><i class="fa-solid fa-shield-halved"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function applyInvoiceFilters() { renderInvoicesTable(); }
+    function resetInvoiceFilters() {
+        document.getElementById('invSearchInput').value = '';
+        document.getElementById('invFilterLocation').value = '';
+        document.getElementById('invFilterBattalion').value = '';
+        renderInvoicesTable();
+    }
+
+    function refreshInsuranceUI() {
+        document.getElementById('nav-insurance-count').innerText = insuranceProjects.length;
+        document.getElementById('ins-total-count').innerText = insuranceProjects.length;
+
+        const totRet = insuranceProjects.reduce((s, p) => s + p.retention, 0);
+        const totIns = insuranceProjects.reduce((s, p) => s + p.insuranceVal, 0);
+        const totRel = insuranceProjects.reduce((s, p) => s + p.releasedVal, 0);
+
+        document.getElementById('ins-total-retention').innerText = formatEGP(totRet);
+        document.getElementById('ins-total-paid').innerText = formatEGP(totIns);
+        document.getElementById('ins-total-released').innerText = formatEGP(totRel);
+
+        renderInsuranceTable();
+    }
+
+    function renderInsuranceTable() {
+        const tbody = document.getElementById('insuranceTableBody');
+        const search = document.getElementById('insSearchInput').value.trim().toLowerCase();
+        const statFilter = document.getElementById('insFilterStatus').value;
+
+        const filtered = insuranceProjects.filter(p => {
+            if (statFilter && !p.notes.includes(statFilter)) return false;
+            if (search && !`${p.code} ${p.name} ${p.fileNo} ${p.notes}`.toLowerCase().includes(search)) return false;
+            return true;
+        });
+
+        document.getElementById('insTableCounter').innerText = `عرض ${filtered.length} من ${insuranceProjects.length}`;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">لا توجد سجلات تأمينات مطابقة</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(item => `
+            <tr class="hover:bg-dark-800/40 transition">
+                <td class="p-3 text-center text-slate-500 font-mono text-xs font-bold">${item.seq}</td>
+                <td class="p-3 text-center font-mono font-bold text-amber-400 bg-dark-900/70 border-x border-dark-700/50">${item.code}</td>
+                <td class="p-3 max-w-xs font-bold text-white truncate" title="${item.name}">${item.name}</td>
+                <td class="p-3 text-center font-mono text-sky-400 text-xs font-bold">${item.fileNo}</td>
+                <td class="p-3 text-center text-xs text-slate-300">${item.certType}</td>
+                <td class="p-3 font-mono text-xs text-left text-rose-400 font-bold">${formatEGP(item.retention)}</td>
+                <td class="p-3 font-mono text-xs text-left text-indigo-300 font-bold">${formatEGP(item.insuranceVal)}</td>
+                <td class="p-3 font-mono text-xs text-left text-emerald-400 font-bold">${formatEGP(item.releasedVal)}</td>
+                <td class="p-3 text-xs max-w-xs truncate ${item.notes.includes('يلزم الدفع') ? 'text-amber-300 font-bold' : 'text-slate-300'}">${item.notes}</td>
+                <td class="p-3 text-center font-mono text-xs text-slate-400">${item.certDate}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="crossLinkToMaster('${item.code}')" class="p-1.5 rounded-lg bg-sky-600/20 text-sky-300 border border-sky-500/30 text-xs" title="العقد بالبيان"><i class="fa-solid fa-file-contract"></i></button>
+                        <button onclick="crossLinkToInvoice('${item.code}')" class="p-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 text-xs" title="المستخلصات"><i class="fa-solid fa-receipt"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function applyInsuranceFilters() { renderInsuranceTable(); }
+    function resetInsuranceFilters() {
+        document.getElementById('insSearchInput').value = '';
+        document.getElementById('insFilterStatus').value = '';
+        renderInsuranceTable();
+    }
+
+    // ========================================================
+    // 7. CROSS-LINKING SHORTCUTS
+    // ========================================================
+    function crossLinkToInvoice(id) {
+        switchView('invoices');
+        document.getElementById('invSearchInput').value = id;
+        applyInvoiceFilters();
+    }
+    function crossLinkToMaster(id) {
+        switchView('master');
+        document.getElementById('masterSearchInput').value = id;
+        applyMasterFilters();
+    }
+    function crossLinkToInsurance(id) {
+        switchView('insurance');
+        document.getElementById('insSearchInput').value = id;
+        applyInsuranceFilters();
+    }
+
+    // ========================================================
+    // 8. DASHBOARD & CHARTS
+    // ========================================================
+    function refreshDashboardUI() {
+        const totalMaster = masterProjects.reduce((s, p) => s + p.value, 0);
+        const totalPaid = invoiceProjects.reduce((s, p) => s + p.paid, 0);
+        document.getElementById('dash-overall-ratio').innerText = totalMaster > 0 ? `${((totalPaid / totalMaster) * 100).toFixed(1)}%` : '0%';
+        document.getElementById('dash-remaining-val').innerText = formatEGP(Math.max(0, totalMaster - totalPaid));
+    }
+
+    function renderDashboardCharts() {
+        refreshDashboardUI();
+
+        // 1. Durations Chart
+        const durCounts = {};
+        masterProjects.forEach(p => { durCounts[p.durationFormatted] = (durCounts[p.durationFormatted] || 0) + 1; });
+        const ctxDur = document.getElementById('dashDurationChart');
+        if (ctxDur) {
+            if (durationChart) durationChart.destroy();
+            durationChart = new Chart(ctxDur.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(durCounts),
+                    datasets: [{ data: Object.values(durCounts), backgroundColor: ['#0284c7', '#38bdf8', '#6366f1', '#10b981', '#f59e0b', '#a855f7'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Cairo', size: 10 } } } }, cutout: '70%' }
+            });
+        }
+
+        // 2. Insurance Status Chart
+        let certIssued = insuranceProjects.filter(p => p.notes.includes('شهادة')).length;
+        let released = insuranceProjects.filter(p => p.notes.includes('تم الرد')).length;
+        let mustPay = insuranceProjects.filter(p => p.notes.includes('يلزم الدفع')).length;
+        const ctxIns = document.getElementById('dashInsuranceChart');
+        if (ctxIns) {
+            if (insuranceChart) insuranceChart.destroy();
+            insuranceChart = new Chart(ctxIns.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['تم إصدار شهادة', 'تم رد التعلية', 'يلزم الدفع'],
+                    datasets: [{ data: [certIssued, released, mustPay], backgroundColor: ['#10b981', '#0284c7', '#f59e0b'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Cairo', size: 10 } } } } }
+            });
+        }
+
+        // 3. Battalion Financial Volume
+        const bats = ['ك578', 'ك552', 'ك581', 'ك553'];
+        const contractByBat = bats.map(b => masterProjects.filter(p => p.battalion.includes(b.replace('ك',''))).reduce((s, p) => s + p.value, 0));
+        const paidByBat = bats.map(b => invoiceProjects.filter(p => p.battalion.includes(b.replace('ك',''))).reduce((s, p) => s + p.paid, 0));
+
+        const ctxBat = document.getElementById('dashBattalionCompareChart');
+        if (ctxBat) {
+            if (battalionCompareChart) battalionCompareChart.destroy();
+            battalionCompareChart = new Chart(ctxBat.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: bats,
+                    datasets: [
+                        { label: 'القيمة التعاقدية (البيان الرسمي)', data: contractByBat, backgroundColor: '#0ea5e9', borderRadius: 8 },
+                        { label: 'المحصل الفعلي (المستخلصات)', data: paidByBat, backgroundColor: '#10b981', borderRadius: 8 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Cairo', size: 11 } } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { family: 'Cairo', size: 11 } }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8', font: { family: 'Cairo', size: 9 }, callback: v => (v / 1000000).toFixed(1) + ' م ج.م' }, grid: { color: '#172648' } }
+                    }
+                }
+            });
+        }
+    }
+
+    // ========================================================
+    // 9. DETAILS MODAL
+    // ========================================================
+    function showMasterDetails(seq) {
+        const item = masterProjects.find(p => p.seq === seq);
+        if (!item) return;
+
+        const linkedInv = invoiceProjects.filter(inv => inv.id === item.code);
+        const linkedIns = insuranceProjects.find(ins => ins.code === item.code);
+
+        const content = document.getElementById('detailsModalContent');
+        content.innerHTML = `
+            <div class="border-b border-dark-700 pb-4 mb-4">
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                    <span class="text-xs px-2.5 py-1 rounded bg-dark-800 text-sky-400 font-mono font-bold">${item.code}</span>
+                    <span class="text-xs px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 font-bold">${item.battalion}</span>
+                    <span class="text-xs px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 font-semibold">${item.generalSite}</span>
+                </div>
+                <h2 class="text-lg font-bold text-white mb-1">${item.name}</h2>
+            </div>
+
+            <div class="p-4 bg-dark-950 rounded-xl border border-dark-800 mb-4">
+                <div class="text-[11px] text-slate-400">القيمة التعاقدية</div>
+                <div class="text-xl font-black text-cyan-400 font-mono mt-1">${formatEGP(item.value)}</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800">
+                    <div class="text-[11px] text-slate-400">تاريخ الإخطار</div>
+                    <div class="text-xs font-bold text-sky-400 font-mono mt-1">${item.date}</div>
+                </div>
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800">
+                    <div class="text-[11px] text-slate-400">مدة التنفيذ</div>
+                    <div class="text-xs font-bold text-indigo-300 mt-1">${item.durationFormatted}</div>
+                </div>
+            </div>
+
+            ${linkedIns ? `
+                <div class="p-3 bg-dark-950 rounded-xl border border-amber-500/30 mb-4">
+                    <div class="text-xs font-bold text-amber-400 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-shield-halved"></i> موقف التأمينات والتعلية:</div>
+                    <div class="text-xs text-slate-300">رقم الملف: <span class="font-mono text-sky-400">${linkedIns.fileNo}</span> | التعلية: <span class="font-mono text-rose-400">${formatEGP(linkedIns.retention)}</span> | رد التعلية: <span class="font-mono text-emerald-400">${formatEGP(linkedIns.releasedVal)}</span></div>
+                    <div class="text-xs text-slate-400 mt-1">الحالة: ${linkedIns.notes} (شهادة بتاريخ ${linkedIns.certDate})</div>
+                </div>
+            ` : ''}
+
+            <div class="p-4 rounded-xl bg-dark-950 border border-dark-800">
+                <div class="text-xs font-bold text-white mb-2">المستخلصات المسجلة (${linkedInv.length})</div>
+                ${linkedInv.length > 0 ? `
+                    <div class="space-y-2 max-h-36 overflow-y-auto">
+                        ${linkedInv.map(inv => `
+                            <div class="p-2 rounded-lg bg-dark-900 flex justify-between text-xs">
+                                <span>${inv.type} (${inv.ratio}) - ${inv.location}</span>
+                                <span class="font-mono text-emerald-400 font-bold">${formatEGP(inv.cert_val)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `<div class="text-xs text-slate-500">لا توجد مستخلصات مسجلة برقم هذا المشروع.</div>`}
+            </div>
+        `;
+        document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function showInvoiceDetails(projId, seq) {
+        const item = invoiceProjects.find(p => p.seq === seq || p.id === projId);
+        if (!item) return;
+
+        const content = document.getElementById('detailsModalContent');
+        content.innerHTML = `
+            <div class="border-b border-dark-700 pb-4 mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-xs px-2.5 py-1 rounded bg-dark-800 text-emerald-400 font-mono font-bold">${item.id}</span>
+                    <span class="text-xs px-2.5 py-1 rounded bg-dark-800 text-slate-300 font-semibold">${item.battalion}</span>
+                    <span class="text-xs px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 font-bold">${item.type}</span>
+                </div>
+                <h2 class="text-lg font-bold text-white mb-1">${item.name}</h2>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800 text-center">
+                    <div class="text-[11px] text-slate-400">قيمة المستخلص</div>
+                    <div class="text-sm font-bold text-amber-300 font-mono mt-1">${formatEGP(item.cert_val)}</div>
+                </div>
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800 text-center">
+                    <div class="text-[11px] text-slate-400">ما تم صرفه</div>
+                    <div class="text-sm font-bold text-emerald-400 font-mono mt-1">${formatEGP(item.paid)}</div>
+                </div>
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800 text-center">
+                    <div class="text-[11px] text-slate-400">المكان</div>
+                    <div class="text-xs font-bold text-sky-400 mt-1">${item.location}</div>
+                </div>
+            </div>
+            <div class="p-3 bg-dark-950 rounded-xl border border-dark-800">
+                <div class="text-[11px] text-slate-400 mb-1">الملاحظات وآخر موقف:</div>
+                <div class="text-xs text-slate-200">${item.status}</div>
+            </div>
+        `;
+        document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function closeDetailsModal() { document.getElementById('detailsModal').classList.add('hidden'); }
+    window.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailsModal(); });
+
+    // ========================================================
+    // 10. INITIALIZATION
+    // ========================================================
+    window.addEventListener('DOMContentLoaded', () => {
+        syncAllDataSources(false);
+    });
+</script>
+</body>
+</html>
