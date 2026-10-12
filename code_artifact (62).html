@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة مكتب السلام للمقاولات العامة والتوريدات | تنفيذ محمد على </title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Cairo & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            950: '#030712',
+                            900: '#0b1329',
+                            850: '#101a35',
+                            800: '#172648',
+                            700: '#22375f',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #030712;
+            color: #f1f5f9;
+        }
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: #0b1329; }
+        ::-webkit-scrollbar-thumb { background: #22375f; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
+        .glass-panel {
+            background: rgba(16, 26, 53, 0.88);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(34, 55, 95, 0.8);
+        }
+        .login-glow {
+            box-shadow: 0 0 50px -10px rgba(14, 165, 233, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white relative bg-dark-950">
+
+<!-- ======================================================== -->
+<!-- شاشة تسجيل الدخول الأمنية (Security Login Gateway) -->
+<!-- ======================================================== -->
+<div id="loginScreen" class="fixed inset-0 z-50 bg-dark-950 flex items-center justify-center p-4 sm:p-6 transition-all duration-500 overflow-y-auto">
+    <!-- خلفية تفاعلية مشعة -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-sky-600/30 rounded-full blur-[128px]"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-600/30 rounded-full blur-[128px]"></div>
+    </div>
+
+    <div class="relative w-full max-w-md glass-panel bg-dark-900/95 border border-dark-700/80 rounded-3xl p-6 sm:p-8 login-glow shadow-2xl">
+        <!-- الشعار والعنوان -->
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-teal-500 mx-auto flex items-center justify-center text-white shadow-xl shadow-sky-600/30 mb-3 border border-sky-400/30">
+                <i class="fa-solid fa-shield-halved text-3xl"></i>
+            </div>
+            <h2 class="text-xl font-black text-white tracking-tight">منظومة السلام المتكاملة للمقاولات</h2>
+            <p class="text-xs text-slate-400 mt-1">بوابة الدخول والإدارة السحابية الموحدة</p>
+            <div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                <i class="fa-solid fa-lock text-[9px]"></i> وصول آمن ومصرح به فقط
+            </div>
+        </div>
+
+        <!-- رسالة الخطأ التنبيهية -->
+        <div id="loginErrorMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation text-rose-400"></i>
+            <span>معرف المستخدم أو كلمة المرور غير صحيحة!</span>
+        </div>
+
+        <!-- نموذج تسجيل الدخول -->
+        <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5 mr-1">معرف المسؤول (User ID)</label>
+                <div class="relative">
+                    <span class="absolute right-3.5 top-3 text-slate-400 text-sm">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </span>
+                    <input type="text" id="loginUsername" required autocomplete="username" placeholder="أدخل معرف الدخول " class="w-full bg-dark-950/90 border border-dark-700 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 font-mono tracking-wider transition">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5 mr-1">كلمة المرور (Password)</label>
+                <div class="relative">
+                    <span class="absolute right-3.5 top-3 text-slate-400 text-sm">
+                        <i class="fa-solid fa-key"></i>
+                    </span>
+                    <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="أدخل كلمة المرور" class="w-full bg-dark-950/90 border border-dark-700 rounded-xl pr-10 pl-10 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 font-mono tracking-widest transition">
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute left-3.5 top-3 text-slate-400 hover:text-slate-200 transition text-sm cursor-pointer" title="إظهار / إخفاء">
+                        <i class="fa-solid fa-eye" id="pwdToggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="rememberMeCheckbox" checked class="w-3.5 h-3.5 rounded bg-dark-950 border-dark-700 text-sky-600 focus:ring-sky-500">
+                    <span>تذكر جلسة الدخول</span>
+                </label>
+                <span class="text-[11px] text-slate-500 font-mono">v3.5 Enterprise</span>
+            </div>
+
+            <button type="submit" id="loginSubmitBtn" class="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-sky-600 via-indigo-600 to-teal-600 hover:from-sky-500 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-sky-600/25 active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                <span>تسجيل الدخول للمنظومة</span>
+            </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-dark-700/60 text-center">
+            <p class="text-[11px] text-slate-500">منظومة الإدارة والمتابعة الفنية والمالية | قطاع المشروعات</p>
+        </div>
+    </div>
+</div>
+
+<!-- Top Banner Notification for Sync Status -->
+<div id="syncToast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none">
+    <div class="px-4 py-2 rounded-xl bg-dark-900/95 border border-dark-700 shadow-2xl flex items-center gap-2.5 text-xs text-white backdrop-blur">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span id="syncToastText">جاري تحديث البيانات السحابية...</span>
+    </div>
+</div>
+
+<!-- Main Navigation Header -->
+<header class="border-b border-dark-700 bg-dark-900/95 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-teal-500 flex items-center justify-center text-white shadow-lg">
+                <i class="fa-solid fa-layer-group text-2xl"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-base sm:text-xl md:text-2xl font-black text-white tracking-tight">
+                        منظومة السلام المتكاملة للمقاولات
+                    </h1>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        ربط سحابي موحد
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400 hidden sm:block">بيان المشروعات الرسمي ⟷ متابعة المستخلصات ⟷ موقف التأمينات ⟷ ضمان الأعمال وخطابات الضمان</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+            <div class="hidden md:flex flex-col text-left text-[11px] font-mono text-slate-400 border-l border-dark-700 pl-3">
+                <span class="text-slate-500">آخر مزامنة:</span>
+                <span id="lastSyncTime" class="text-sky-400 font-bold">جاري الفحص...</span>
+            </div>
+            <button onclick="syncAllDataSources(true)" id="globalSyncBtn" class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-500 hover:to-teal-500 text-white text-xs sm:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-arrows-rotate" id="globalSyncIcon"></i>
+                <span>تحديث سحابي فوري</span>
+            </button>
+
+            <!-- زر تسجيل الخروج الآمن -->
+            <button onclick="performLogout()" class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-dark-800 hover:bg-rose-600/20 text-slate-300 hover:text-rose-400 border border-dark-700 hover:border-rose-500/30 text-xs sm:text-sm font-bold transition cursor-pointer" title="تسجيل الخروج">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span class="hidden sm:inline">خروج</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<div class="bg-dark-950/80 border-b border-dark-700 sticky top-20 z-30 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
+        <!-- Navigation Tabs -->
+        <nav class="flex items-center gap-2 overflow-x-auto text-xs sm:text-sm">
+            <button onclick="switchView('master')" id="tabBtn-master" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-sky-600 text-white transition whitespace-nowrap shadow-md">
+                <i class="fa-solid fa-file-contract"></i>
+                <span>1. بيان المشروعات (الرسمي)</span>
+                <span class="px-2 py-0.5 rounded-full bg-dark-950/60 text-[11px] font-mono" id="nav-master-count">0</span>
+            </button>
+
+            <button onclick="switchView('invoices')" id="tabBtn-invoices" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap">
+                <i class="fa-solid fa-receipt"></i>
+                <span>2. متابعة المستخلصات</span>
+                <span class="px-2 py-0.5 rounded-full bg-dark-950/60 text-[11px] font-mono" id="nav-invoices-count">0</span>
+            </button>
+
+            <button onclick="switchView('insurance')" id="tabBtn-insurance" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>3. موقف التأمينات الاجتماعية</span>
+                <span class="px-2 py-0.5 rounded-full bg-dark-950/60 text-[11px] font-mono" id="nav-insurance-count">0</span>
+            </button>
+
+            <button onclick="switchView('guarantee')" id="tabBtn-guarantee" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap">
+                <i class="fa-solid fa-award"></i>
+                <span>4. ضمان الأعمال والتأمين النهائي</span>
+                <span class="px-2 py-0.5 rounded-full bg-dark-950/60 text-[11px] font-mono" id="nav-guarantee-count">0</span>
+            </button>
+
+            <button onclick="switchView('dashboard')" id="tabBtn-dashboard" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>التحليل الشامل</span>
+            </button>
+        </nav>
+
+        <!-- Status Indicators -->
+        <div class="flex items-center gap-2 text-[10px] font-mono flex-wrap">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-sky-400" id="dot-master"></span>
+                البيان: <span id="status-master-text">متصل</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400" id="dot-invoices"></span>
+                المستخلصات: <span id="status-invoices-text">متصل</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400" id="dot-insurance"></span>
+                التأمينات: <span id="status-insurance-text">متصل</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400" id="dot-letters"></span>
+                خطابات الضمان: <span id="status-letters-text">متصل</span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <div id="view-master" class="space-y-6">
+        <!-- Dynamic Filter-Responsive KPI Cards -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي المشروعات المعروضة</span>
+                    <span class="p-2 rounded-xl bg-sky-500/10 text-sky-400 text-xs"><i class="fa-solid fa-diagram-project"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-white font-mono" id="master-total-count">0</div>
+                <div class="text-[11px] text-sky-400/90 mt-2 flex items-center justify-between">
+                    <span id="master-filter-indicator">كل المشروعات</span>
+                    <span id="master-total-all-tag" class="text-slate-500 font-mono">0 كلي</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">القيمة التعاقدية المعتمدة</span>
+                    <span class="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 text-xs"><i class="fa-solid fa-file-signature"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-cyan-400 font-mono" id="master-total-val">0 ج.م</div>
+                <div class="text-[11px] text-slate-400 mt-2">قيمة العقود الرسمية للمشاريع بالفلتر</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">المنصرف الفعلي المحصل</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-emerald-400 font-mono" id="master-total-disbursed">0 ج.م</div>
+                <div class="text-[11px] text-emerald-400/90 mt-2 flex items-center justify-between">
+                    <span>نسبة الصرف من العقد:</span>
+                    <span id="master-disbursed-ratio" class="font-mono font-bold">0%</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">سداد التأمينات الاجتماعية</span>
+                    <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs"><i class="fa-solid fa-receipt"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-indigo-300 font-mono" id="master-total-ins-paid">0 ج.م</div>
+                <div class="text-[11px] text-slate-400 mt-2">المسدد لمكاتب التأمينات للمشاريع المعروضة</div>
+            </div>
+        </section>
+
+        <!-- Master Filters -->
+        <section class="glass-panel rounded-2xl p-4 space-y-3">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="masterSearchInput" oninput="applyMasterFilters()" placeholder="بحث برقم المشروع (مثال: 81421103)، المقايسة، الموقع، أو الكتيبة..." class="w-full bg-dark-950 border border-dark-700 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white focus:outline-none focus:border-sky-500">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="masterFilterSite" onchange="applyMasterFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع المواقع العامة</option>
+                    </select>
+
+                    <select id="masterFilterBattalion" onchange="applyMasterFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع الكتائب</option>
+                    </select>
+
+                    <button onclick="resetMasterFilters()" class="p-2.5 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs transition border border-dark-700" title="إعادة التعيين">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Master Projects Table -->
+        <section class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-dark-700">
+            <div class="p-4 border-b border-dark-700 flex flex-wrap items-center justify-between gap-2 bg-dark-900/60">
+                <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-table-list text-sky-400"></i>
+                    جدول بيان المشروعات التعاقدية (المرجع الأساسي)
+                </h3>
+                <span class="text-xs text-slate-400 font-mono" id="masterTableCounter">عرض 0 من 0</span>
+            </div>
+
+            <div class="overflow-x-auto max-h-[700px] overflow-y-auto">
+                <table class="w-full text-right text-xs sm:text-sm border-collapse">
+                    <thead class="bg-dark-950 text-slate-300 sticky top-0 z-10 border-b border-dark-700 font-bold">
+                        <tr>
+                            <th class="p-3 text-center">م</th>
+                            <th class="p-3 text-center bg-dark-900/95 text-sky-400 border-x border-dark-700/50">رقم المشروع</th>
+                            <th class="p-3 min-w-[260px]">اسم المشروع (المعتمد)</th>
+                            <th class="p-3 text-center">الكتيبة</th>
+                            <th class="p-3 text-center">تاريخ الإخطار</th>
+                            <th class="p-3 text-left font-mono">قيمة العقد</th>
+                            <th class="p-3 text-left font-mono text-emerald-400">المنصرف الفعلي</th>
+                            <th class="p-3 text-left font-mono text-indigo-300">سداد التأمينات</th>
+                            <th class="p-3 text-center">تاريخ صرف الختامي</th>
+                            <th class="p-3 text-center">التأمين النهائي / الضمان</th>
+                            <th class="p-3 text-center">كارت المشروع</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masterTableBody" class="divide-y divide-dark-700/60 font-medium"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div id="view-invoices" class="space-y-6 hidden">
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">المستخلصات المعروضة</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-receipt"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-white font-mono" id="inv-total-count">0</div>
+                <div class="text-[11px] text-emerald-400/90 mt-2 flex items-center justify-between">
+                    <span id="inv-filter-indicator">كل المستخلصات</span>
+                    <span id="inv-total-all-tag" class="text-slate-500 font-mono">0 كلي</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">المنصرف الفعلي المحصل</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-emerald-400 font-mono" id="inv-total-paid">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">إجمالي ما تم صرفه للمستخلصات المفلترة</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">قيمة المستخلصات</span>
+                    <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 text-xs"><i class="fa-solid fa-money-check-dollar"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-amber-300 font-mono" id="inv-total-cert-val">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">إجمالي قيم المستخلصات المعروضة</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">مستخلصات ختامية (100%)</span>
+                    <span class="p-2 rounded-xl bg-purple-500/10 text-purple-400 text-xs"><i class="fa-solid fa-flag-checkered"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-purple-400 font-mono" id="inv-final-count">0</div>
+                <div class="text-xs text-purple-300/80 mt-2">مستخلصات ختامية مكتملة</div>
+            </div>
+        </section>
+
+        <!-- Invoices Filter Bar -->
+        <section class="glass-panel rounded-2xl p-4 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="invSearchInput" oninput="applyInvoiceFilters()" placeholder="بحث برقم المشروع، العملية، الكتيبة، أو الملاحظات..." class="w-full bg-dark-950 border border-dark-700 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="invFilterLocation" onchange="applyInvoiceFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع أماكن المستخلص</option>
+                        <option value="تم الصرف">تم الصرف</option>
+                        <option value="الكتيبة">الكتيبة</option>
+                        <option value="الادارة">الإدارة / العباسية</option>
+                        <option value="المركزية">المركزية</option>
+                        <option value="150">اللواء 150</option>
+                        <option value="متوقف">متوقف / استيفاء</option>
+                    </select>
+
+                    <select id="invFilterBattalion" onchange="applyInvoiceFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع الكتائب</option>
+                    </select>
+
+                    <button onclick="resetInvoiceFilters()" class="p-2.5 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs transition border border-dark-700" title="إعادة التعيين">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Invoices Table -->
+        <section class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-dark-700">
+            <div class="p-4 border-b border-dark-700 flex items-center justify-between bg-dark-900/60">
+                <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-money-bill-transfer text-emerald-400"></i>
+                    جدول حركة المستخلصات التفصيلي (أسماء متطابقة وموحدة مع البيان الرسمي)
+                </h3>
+                <span class="text-xs text-slate-400 font-mono" id="invTableCounter">عرض 0 من 0</span>
+            </div>
+
+            <div class="overflow-x-auto max-h-[700px] overflow-y-auto">
+                <table class="w-full text-right text-xs sm:text-sm border-collapse">
+                    <thead class="bg-dark-950 text-slate-300 sticky top-0 z-10 border-b border-dark-700 font-bold">
+                        <tr>
+                            <th class="p-3 text-center">م</th>
+                            <th class="p-3 text-center text-emerald-400 bg-dark-900/70 border-x border-dark-700/50">رقم المشروع</th>
+                            <th class="p-3 min-w-[240px]">اسم المشروع (المطابق)</th>
+                            <th class="p-3 text-center">الكتيبة</th>
+                            <th class="p-3 text-center">النوع</th>
+                            <th class="p-3 text-center font-mono">النسبة المعتمدة</th>
+                            <th class="p-3 text-left font-mono text-amber-300">قيمة المستخلص</th>
+                            <th class="p-3 text-left font-mono text-emerald-400">ما تم صرفه</th>
+                            <th class="p-3 text-center">مكان الأوراق</th>
+                            <th class="p-3 min-w-[180px]">آخر موقف</th>
+                            <th class="p-3 text-center">ربط المنظومة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody" class="divide-y divide-dark-700/60 font-medium"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div id="view-insurance" class="space-y-6 hidden">
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">ملفات التأمينات (المعروضة)</span>
+                    <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 text-xs"><i class="fa-solid fa-folder-open"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-white font-mono" id="ins-total-count">0</div>
+                <div class="text-[11px] text-amber-400/90 mt-2 flex items-center justify-between">
+                    <span id="ins-filter-indicator">كل الملفات</span>
+                    <span id="ins-total-all-tag" class="text-slate-500 font-mono">0 كلي</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي مبالغ التعلية</span>
+                    <span class="p-2 rounded-xl bg-rose-500/10 text-rose-400 text-xs"><i class="fa-solid fa-arrow-down-short-wide"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-rose-400 font-mono" id="ins-total-retention">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">المحتجز كتعلية بالمعروض</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي سداد التأمينات</span>
+                    <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs"><i class="fa-solid fa-receipt"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-indigo-300 font-mono" id="ins-total-paid">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">المسدد لمكاتب التأمينات للمعروض</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي رد التعلية</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-emerald-400 font-mono" id="ins-total-released">0 ج.م</div>
+                <div class="text-xs text-slate-400 mt-2">المسترد بعد صدور الشهادات</div>
+            </div>
+        </section>
+
+        <!-- Insurance Filter Bar -->
+        <section class="glass-panel rounded-2xl p-4 space-y-3">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="insSearchInput" oninput="applyInsuranceFilters()" placeholder="بحث برقم المشروع، رقم الملف (مثال: 2360/2020)، اسم المشروع، أو الملاحظات..." class="w-full bg-dark-950 border border-dark-700 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="insFilterStatus" onchange="applyInsuranceFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع الحالات والملاحظات</option>
+                        <option value="تم اصدار شهادة">تم إصدار شهادة</option>
+                        <option value="تم الرد">تم رد التعلية</option>
+                        <option value="يلزم الدفع">يلزم الدفع</option>
+                        <option value="بدون تعلية">بدون تعلية</option>
+                    </select>
+
+                    <button onclick="resetInsuranceFilters()" class="p-2.5 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs transition border border-dark-700" title="إعادة التعيين">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insurance Table -->
+        <section class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-dark-700">
+            <div class="p-4 border-b border-dark-700 flex items-center justify-between bg-dark-900/60">
+                <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-amber-400"></i>
+                    جدول موقف التأمينات الاجتماعية والتعلية المستردة
+                </h3>
+                <span class="text-xs text-slate-400 font-mono" id="insTableCounter">عرض 0 من 0</span>
+            </div>
+
+            <div class="overflow-x-auto max-h-[700px] overflow-y-auto">
+                <table class="w-full text-right text-xs sm:text-sm border-collapse">
+                    <thead class="bg-dark-950 text-slate-300 sticky top-0 z-10 border-b border-dark-700 font-bold">
+                        <tr>
+                            <th class="p-3 text-center">م</th>
+                            <th class="p-3 text-center text-amber-400 bg-dark-900/70 border-x border-dark-700/50">رقم المشروع</th>
+                            <th class="p-3 min-w-[260px]">اسم المشروع (المطابق)</th>
+                            <th class="p-3 text-center font-mono text-sky-400">رقم الملف</th>
+                            <th class="p-3 text-center">نوع المستخلص</th>
+                            <th class="p-3 text-left font-mono text-rose-400">قيمة التعلية</th>
+                            <th class="p-3 text-left font-mono text-indigo-300">سداد التأمينات</th>
+                            <th class="p-3 text-left font-mono text-emerald-400">رد تعلية</th>
+                            <th class="p-3 min-w-[200px]">الملاحظات والموقف</th>
+                            <th class="p-3 text-center font-mono">تاريخ الشهادة</th>
+                            <th class="p-3 text-center">ربط العقد</th>
+                        </tr>
+                    </thead>
+                    <tbody id="insuranceTableBody" class="divide-y divide-dark-700/60 font-medium"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div id="view-guarantee" class="space-y-6 hidden">
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">إجمالي التأمين النهائي والضمانات</span>
+                    <span class="p-2 rounded-xl bg-purple-500/10 text-purple-400 text-xs"><i class="fa-solid fa-lock"></i></span>
+                </div>
+                <div class="text-base sm:text-2xl font-black text-purple-300 font-mono" id="guar-total-val">0 ج.م</div>
+                <div class="text-[11px] text-purple-400/90 mt-2 flex items-center justify-between">
+                    <span id="guar-filter-indicator">كل المشاريع</span>
+                    <span id="guar-total-all-tag" class="text-slate-500 font-mono">0 كلي</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">مشاريع بخطابات ضمان (LG)</span>
+                    <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs"><i class="fa-solid fa-file-shield"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-indigo-300 font-mono" id="guar-letters-count">0</div>
+                <div class="text-xs text-indigo-300 mt-2">معفاة من الخصم النقدي</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">تم الرد واسترداد الخطاب بنجاح</span>
+                    <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs"><i class="fa-solid fa-circle-check"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-emerald-400 font-mono" id="guar-returned-count">0</div>
+                <div class="text-xs text-emerald-300 mt-2">تم صرف الختامي واسترداد الأصل</div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-slate-400">مستحق الرد الآن (انقضت السنة)</span>
+                    <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 text-xs"><i class="fa-solid fa-bell"></i></span>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono" id="guar-due-count">0</div>
+                <div class="text-xs text-amber-300 mt-2">واجب مخاطبة الجهة للإفراج</div>
+            </div>
+        </section>
+
+        <!-- Guarantee Filter -->
+        <section class="glass-panel rounded-2xl p-4 space-y-3">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="guarSearchInput" oninput="applyGuaranteeFilters()" placeholder="بحث برقم المشروع أو اسم العملية أو رقم الخطاب أو موقف الصرف..." class="w-full bg-dark-950 border border-dark-700 rounded-xl pr-10 pl-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="guarFilterType" onchange="applyGuaranteeFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع أنواع الضمان (خطابات + نقدي)</option>
+                        <option value="خطاب ضمان">مغطى بخطاب ضمان بنكي (LG)</option>
+                        <option value="خصم نقدي">خاضع لخصم نقدي (5%)</option>
+                    </select>
+
+                    <select id="guarFilterStatus" onchange="applyGuaranteeFilters()" class="bg-dark-950 border border-dark-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-200">
+                        <option value="">جميع مواقف الضمان والتأمين</option>
+                        <option value="تم الرد">تم الرد واسترداد الخطاب بنجاح</option>
+                        <option value="مستحق الرد">مستحق الرد الآن (انتهت السنة)</option>
+                        <option value="ساري">ساري (تحت فترة الضمان)</option>
+                        <option value="لم يصرف الختامي">لم يصرف الختامي بعد</option>
+                    </select>
+
+                    <button onclick="resetGuaranteeFilters()" class="p-2.5 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-300 text-xs transition border border-dark-700" title="إعادة التعيين">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Unified Guarantee & Letters Table (Single Master Table) -->
+        <section class="glass-panel rounded-2xl overflow-hidden shadow-2xl border border-dark-700">
+            <div class="p-4 border-b border-dark-700 flex items-center justify-between bg-dark-900/60">
+                <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-purple-400"></i>
+                    الجدول الموحد لضمان الأعمال وخطابات الضمان والتأمين النهائي وموقف الرد
+                </h3>
+                <span class="text-xs text-slate-400 font-mono" id="guarTableCounter">عرض 0 من 0</span>
+            </div>
+
+            <div class="overflow-x-auto max-h-[750px] overflow-y-auto">
+                <table class="w-full text-right text-xs sm:text-sm border-collapse">
+                    <thead class="bg-dark-950 text-slate-300 sticky top-0 z-10 border-b border-dark-700 font-bold">
+                        <tr>
+                            <th class="p-3 text-center">م</th>
+                            <th class="p-3 text-center text-purple-400 bg-dark-900/70 border-x border-dark-700/50">رقم المشروع</th>
+                            <th class="p-3 min-w-[220px]">اسم المشروع (المطابق)</th>
+                            <th class="p-3 text-center">الكتيبة</th>
+                            <th class="p-3 text-center">نوع التغطية</th>
+                            <th class="p-3 text-left font-mono">قيمة الضمان / الخطاب</th>
+                            <th class="p-3 text-center">بيانات خطاب الضمان</th>
+                            <th class="p-3 text-center">موقف صرف الختامي</th>
+                            <th class="p-3 text-left font-mono text-emerald-400">المبلغ المسترد</th>
+                            <th class="p-3 text-center font-mono text-amber-300">ميعاد الرد القانوني</th>
+                            <th class="p-3 text-center">حالة الضمان والرد</th>
+                            <th class="p-3 text-center">كارت</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guaranteeTableBody" class="divide-y divide-dark-700/60 font-medium"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div id="view-dashboard" class="space-y-6 hidden">
+        <section class="glass-panel rounded-2xl p-6 bg-gradient-to-r from-sky-950/40 via-dark-900 to-teal-950/40 border border-dark-700">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-scale-balanced text-emerald-400"></i>
+                        المطابقة الشاملة الموزونة (العقود الرسمية ⟷ المستخلصات ⟷ التأمينات ⟷ الضمان النهائي)
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                        يتم الاعتماد على بيان المشروعات الرسمي كمرجع أساسي للقيمة التعاقدية، وتفادي تكرار المستخلصات التراكمية، ومطابقتها مع مواقف خطابات الضمان البنكية ونسب التأمين النهائي لضمان الدقة المحاسبية التامة.
+                    </p>
+                </div>
+                <div class="flex items-center gap-4 bg-dark-950/80 p-4 rounded-xl border border-dark-700">
+                    <div class="text-center">
+                        <div class="text-[11px] text-slate-400">نسبة الصرف الكلية</div>
+                        <div class="text-2xl font-black text-emerald-400 font-mono mt-1" id="dash-overall-ratio">0%</div>
+                    </div>
+                    <div class="h-10 w-px bg-dark-700"></div>
+                    <div class="text-center">
+                        <div class="text-[11px] text-slate-400">المتبقي للتحصيل من العقود</div>
+                        <div class="text-sm font-bold text-cyan-300 font-mono mt-1" id="dash-remaining-val">0 ج.م</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Grid -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <h3 class="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-sky-400"></i>
+                    توزيع المشروعات حسب المدد التنفيذية
+                </h3>
+                <div class="relative h-64 w-full flex items-center justify-center">
+                    <canvas id="dashDurationChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between">
+                <h3 class="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-amber-400"></i>
+                    موقف شهادات وسداد التأمينات
+                </h3>
+                <div class="relative h-64 w-full flex items-center justify-center">
+                    <canvas id="dashInsuranceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 lg:col-span-2 flex flex-col justify-between">
+                <h3 class="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-column text-teal-400"></i>
+                    مقارنة القيمة التعاقدية المعتمدة مقابل المنصرف الفعلي لكل كتيبة
+                </h3>
+                <div class="relative h-72 w-full flex items-center justify-center">
+                    <canvas id="dashBattalionCompareChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</main>
+
+<!-- Details Modal -->
+<div id="detailsModal" class="fixed inset-0 bg-dark-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel bg-dark-900 border border-dark-700 rounded-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto p-6 shadow-2xl relative">
+        <button onclick="closeDetailsModal()" class="absolute left-4 top-4 text-slate-400 hover:text-white p-2 rounded-xl bg-dark-800 transition">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <div id="detailsModalContent"></div>
+    </div>
+</div>
+
+<script>
+    // ========================================================
+    // 1. CONSTANTS & CLOUD DATA SOURCES
+    // ========================================================
+    const MASTER_DOC_ID = "168HknUhZ3fwE0VaHR1Z3nesJ5VZfrA43nv8fz4TAWP4";
+    const INVOICES_DOC_ID = "1K5ktCu_XCkg9SC5ybPt88RTjVgqkhz-JWHu-Gq35irE";
+    const INSURANCE_DOC_ID = "188Pyva__oIEu4h1CrVDGnMdnELq0mcqJX8vWPztWMzI";
+    const GUARANTEE_LETTERS_DOC_ID = "1T_GuvvUCLNRcpbtkqzMhtt98On-XA0_avMvPuM0tdp4";
+
+    // بيانات تسجيل الدخول المعتمدة
+    const AUTH_ID = "ADMIN";
+    const AUTH_PWD = "012012";
+    const AUTH_SESSION_KEY = "salam_system_authenticated_session";
+
+    let masterProjects = [];
+    let invoiceProjects = [];
+    let insuranceProjects = [];
+    let guaranteeLetters = [];
+    let activeView = 'master';
+
+    let durationChart = null;
+    let insuranceChart = null;
+    let battalionCompareChart = null;
+
+    // ========================================================
+    // نظام المصادقة والحماية (Authentication Handlers)
+    // ========================================================
+    function checkAuthenticationState() {
+        const isAuth = sessionStorage.getItem(AUTH_SESSION_KEY) === "true";
+        const loginScreen = document.getElementById('loginScreen');
+        if (isAuth) {
+            if (loginScreen) {
+                loginScreen.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    loginScreen.classList.add('hidden');
+                }, 400);
+            }
+            return true;
+        } else {
+            if (loginScreen) {
+                loginScreen.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            }
+            return false;
+        }
+    }
+
+    function handleLoginSubmit(e) {
+        if (e) e.preventDefault();
+        const userField = document.getElementById('loginUsername');
+        const pwdField = document.getElementById('loginPassword');
+        const errorBox = document.getElementById('loginErrorMsg');
+
+        const enteredUser = (userField ? userField.value : '').trim().toUpperCase();
+        const enteredPwd = (pwdField ? pwdField.value : '').trim();
+
+        if (enteredUser === AUTH_ID && enteredPwd === AUTH_PWD) {
+            if (errorBox) errorBox.classList.add('hidden');
+            sessionStorage.setItem(AUTH_SESSION_KEY, "true");
+            
+            const loginScreen = document.getElementById('loginScreen');
+            if (loginScreen) {
+                loginScreen.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    loginScreen.classList.add('hidden');
+                }, 400);
+            }
+            showSyncToast('تم تسجيل الدخول بنجاح، مرحباً بك في المنظومة');
+        } else {
+            if (errorBox) {
+                errorBox.classList.remove('hidden');
+                errorBox.classList.add('animate-shake');
+                setTimeout(() => errorBox.classList.remove('animate-shake'), 500);
+            }
+            if (pwdField) {
+                pwdField.value = '';
+                pwdField.focus();
+            }
+        }
+    }
+
+    function togglePasswordVisibility() {
+        const pwdField = document.getElementById('loginPassword');
+        const icon = document.getElementById('pwdToggleIcon');
+        if (!pwdField || !icon) return;
+        if (pwdField.type === 'password') {
+            pwdField.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash';
+        } else {
+            pwdField.type = 'password';
+            icon.className = 'fa-solid fa-eye';
+        }
+    }
+
+    function performLogout() {
+        sessionStorage.removeItem(AUTH_SESSION_KEY);
+        const loginScreen = document.getElementById('loginScreen');
+        const userField = document.getElementById('loginUsername');
+        const pwdField = document.getElementById('loginPassword');
+        const errorBox = document.getElementById('loginErrorMsg');
+
+        if (errorBox) errorBox.classList.add('hidden');
+        if (pwdField) pwdField.value = '';
+        if (userField) userField.focus();
+
+        if (loginScreen) {
+            loginScreen.classList.remove('hidden');
+            setTimeout(() => {
+                loginScreen.classList.remove('opacity-0', 'pointer-events-none');
+            }, 10);
+        }
+        showSyncToast('تم تسجيل الخروج بنجاح');
+    }
+
+    function showSyncToast(message) {
+        const toast = document.getElementById('syncToast');
+        const text = document.getElementById('syncToastText');
+        if (!toast || !text) return;
+        text.innerText = message;
+        toast.className = `fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-100 pointer-events-auto`;
+        setTimeout(() => {
+            toast.className = `fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none`;
+        }, 3000);
+    }
+
+    // ========================================================
+    // 2. UNIVERSAL GVIZ JSONP ENGINE
+    // ========================================================
+    function fetchViaGvizJsonp(docId, callback) {
+        if (!docId) { callback(null); return; }
+        const callbackName = 'gvizCallback_' + Math.floor(Math.random() * 10000000);
+        let completed = false;
+
+        window[callbackName] = function(resp) {
+            completed = true;
+            delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+            if (resp && resp.table) {
+                const table = resp.table;
+                const rows = (table.rows || []).map(r => {
+                    if (!r || !r.c) return [];
+                    return r.c.map(c => c ? (c.f !== undefined && c.f !== null ? c.f : (c.v !== undefined && c.v !== null ? c.v : '')) : '');
+                });
+                const cols = (table.cols || []).map(c => c && (c.label || c.id) ? c.label || c.id : '');
+                callback([cols, ...rows]);
+            } else {
+                callback(null);
+            }
+        };
+
+        const script = document.createElement('script');
+        script.src = `https://docs.google.com/spreadsheets/d/${docId}/gviz/tq?tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
+        script.onerror = function() {
+            if (!completed) {
+                completed = true;
+                delete window[callbackName];
+                if (script.parentNode) script.parentNode.removeChild(script);
+                callback(null);
+            }
+        };
+
+        document.head.appendChild(script);
+
+        setTimeout(() => {
+            if (!completed) {
+                completed = true;
+                delete window[callbackName];
+                if (script.parentNode) script.parentNode.removeChild(script);
+                callback(null);
+            }
+        }, 6500);
+    }
+
+    // ========================================================
+    // 3. SYNCHRONIZATION ENGINE
+    // ========================================================
+    async function syncAllDataSources(isUser = false) {
+        const icon = document.getElementById('globalSyncIcon');
+        if (icon) icon.classList.add('fa-spin');
+
+        if (isUser) showSyncToast('جاري تحديث ومزامنة البيانات السحابية وخطابات الضمان...');
+
+        const [mOk, iOk, insOk, gOk] = await Promise.all([
+            fetchMasterData(),
+            fetchInvoicesData(),
+            fetchInsuranceData(),
+            fetchGuaranteeLettersData()
+        ]);
+
+        if (icon) icon.classList.remove('fa-spin');
+
+        const now = new Date();
+        document.getElementById('lastSyncTime').innerText = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        document.getElementById('status-master-text').innerText = mOk ? 'متصل' : 'فشل';
+        document.getElementById('dot-master').className = `w-1.5 h-1.5 rounded-full ${mOk ? 'bg-emerald-400' : 'bg-rose-400'}`;
+
+        document.getElementById('status-invoices-text').innerText = iOk ? 'متصل' : 'فشل';
+        document.getElementById('dot-invoices').className = `w-1.5 h-1.5 rounded-full ${iOk ? 'bg-emerald-400' : 'bg-rose-400'}`;
+
+        document.getElementById('status-insurance-text').innerText = insOk ? 'متصل' : 'فشل';
+        document.getElementById('dot-insurance').className = `w-1.5 h-1.5 rounded-full ${insOk ? 'bg-emerald-400' : 'bg-rose-400'}`;
+
+        const dotLetters = document.getElementById('dot-letters');
+        const statusLettersText = document.getElementById('status-letters-text');
+        if (dotLetters && statusLettersText) {
+            statusLettersText.innerText = gOk ? 'متصل' : 'فشل';
+            dotLetters.className = `w-1.5 h-1.5 rounded-full ${gOk ? 'bg-emerald-400' : 'bg-rose-400'}`;
+        }
+
+        harmonizeProjectNames();
+
+        refreshMasterUI();
+        refreshInvoiceUI();
+        refreshInsuranceUI();
+        refreshGuaranteeUI();
+        refreshDashboardUI();
+
+        if (isUser) {
+            showSyncToast(`تم التحديث بنجاح (${masterProjects.length} مشروع | ${guaranteeLetters.length} خطاب ضمان مسجل)`);
+        }
+    }
+
+    function cleanText(t) {
+        if (!t && t !== 0) return '';
+        return String(t).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function cleanId(str) {
+        if (!str) return '';
+        return String(str).replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+    }
+
+    function isLetterExplicitlyReturned(letter) {
+        if (!letter) return false;
+        const status = (letter.disbursementStatus || '').trim();
+        const retVal = parseFloat(letter.releasedAmount) || 0;
+        return status.includes('تم الرد') || retVal > 0;
+    }
+
+    function extractReturnDate(letter) {
+        if (!letter) return null;
+        const status = (letter.disbursementStatus || '').trim();
+        const match = status.match(/\d{1,4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,4}/);
+        if (match) return match[0];
+        if (letter.deliveryDate && letter.deliveryDate !== '-') return letter.deliveryDate;
+        if (letter.expiryDate && letter.expiryDate !== '-') return letter.expiryDate;
+        return 'مسجل بالشيت';
+    }
+
+    function formatEGP(val) {
+        if (!val || val === '-' || val === '') return '0 ج.م';
+        const clean = String(val).replace(/[^0-9.-]/g, '');
+        const num = parseFloat(clean);
+        if (isNaN(num)) return val;
+        return num.toLocaleString('ar-EG') + ' ج.م';
+    }
+
+    function parseDate(dateStr) {
+        if (!dateStr || dateStr === '-' || dateStr === 'غير محدد') return null;
+        const parts = dateStr.split(/[\/\-\.]/);
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                return new Date(parts[0], parts[1] - 1, parts[2]);
+            } else {
+                return new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+        }
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDateDisplay(d) {
+        if (!d) return 'غير محدد';
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}/${month}/${day}`;
+    }
+
+    function calculateGuaranteeReleaseDate(finalPaymentDateStr) {
+        const d = parseDate(finalPaymentDateStr);
+        if (!d) return null;
+        const releaseDate = new Date(d);
+        releaseDate.setFullYear(releaseDate.getFullYear() + 1);
+        return releaseDate;
+    }
+
+    function sanitizeRatio(ratioStr, typeStr) {
+        const type = (typeStr || '').toLowerCase();
+        const raw = cleanText(ratioStr);
+
+        if (type.includes('ختامي') || type.includes('نهائي') || type.includes('ختامى')) {
+            return '100%';
+        }
+
+        if (!raw || raw === '-' || raw === '0') {
+            return raw === '0' ? '0%' : '-';
+        }
+
+        const num = parseFloat(raw.replace('%', ''));
+        if (!isNaN(num)) {
+            if (num > 0 && num <= 1) {
+                return Math.round(num * 100) + '%';
+            }
+            if (num > 1) {
+                return Math.round(num) + '%';
+            }
+        }
+        return raw.includes('%') ? raw : raw + '%';
+    }
+
+    function harmonizeProjectNames() {
+        const masterMap = {};
+        masterProjects.forEach(m => {
+            if (m.code) {
+                masterMap[cleanId(m.code)] = { name: m.name, battalion: m.battalion, generalSite: m.generalSite, value: m.value };
+            }
+        });
+
+        invoiceProjects.forEach(inv => {
+            const m = masterMap[cleanId(inv.id)];
+            if (m) {
+                inv.canonicalName = m.name;
+                if (!inv.battalion || inv.battalion === 'غير محدد') inv.battalion = m.battalion;
+            } else {
+                inv.canonicalName = inv.name;
+            }
+        });
+
+        insuranceProjects.forEach(ins => {
+            const m = masterMap[cleanId(ins.code)];
+            if (m) {
+                ins.canonicalName = m.name;
+            } else {
+                ins.canonicalName = ins.name;
+            }
+        });
+
+        guaranteeLetters.forEach(gl => {
+            const m = masterMap[cleanId(gl.projectCode)];
+            if (m) {
+                gl.canonicalProjectName = m.name;
+            } else {
+                gl.canonicalProjectName = gl.projectName || 'مشروع غير مدرج بالبيان';
+            }
+        });
+    }
+
+    function getProjectActualDisbursed(projCode) {
+        if (!projCode) return 0;
+        const cleanCode = cleanId(projCode);
+        const letter = guaranteeLetters.find(g => cleanId(g.projectCode) === cleanCode);
+        const masterItem = masterProjects.find(m => cleanId(m.code) === cleanCode);
+
+        // إذا كان المشروع مسجلاً في شيت الضمان بحالة "تم الرد"، فهو مشروع قديم مكتمل ومنصرف 100%
+        if (letter && isLetterExplicitlyReturned(letter)) {
+            if (masterItem && masterItem.value > 0) {
+                return masterItem.value;
+            }
+        }
+
+        const invList = invoiceProjects.filter(inv => cleanId(inv.id) === cleanCode && inv.isPaid && inv.paid > 0);
+        if (invList.length === 0) return 0;
+
+        const maxPaid = Math.max(...invList.map(inv => inv.paid));
+        if (masterItem && masterItem.value > 0) {
+            return Math.min(maxPaid, masterItem.value);
+        }
+        return maxPaid;
+    }
+
+    function getProjectLetterOfGuarantee(projCode) {
+        if (!projCode) return null;
+        const cleanCode = cleanId(projCode);
+        return guaranteeLetters.find(g => cleanId(g.projectCode) === cleanCode) || null;
+    }
+
+    function fetchMasterData() {
+        return new Promise((resolve) => {
+            fetchViaGvizJsonp(MASTER_DOC_ID, (matrix) => {
+                if (matrix && parseMasterMatrix(matrix)) resolve(true);
+                else resolve(false);
+            });
+        });
+    }
+
+    function fetchInvoicesData() {
+        return new Promise((resolve) => {
+            fetchViaGvizJsonp(INVOICES_DOC_ID, (matrix) => {
+                if (matrix && parseInvoicesMatrix(matrix)) resolve(true);
+                else resolve(false);
+            });
+        });
+    }
+
+    function fetchInsuranceData() {
+        return new Promise((resolve) => {
+            fetchViaGvizJsonp(INSURANCE_DOC_ID, (matrix) => {
+                if (matrix && parseInsuranceMatrix(matrix)) resolve(true);
+                else resolve(false);
+            });
+        });
+    }
+
+    function fetchGuaranteeLettersData() {
+        return new Promise((resolve) => {
+            fetchViaGvizJsonp(GUARANTEE_LETTERS_DOC_ID, (matrix) => {
+                if (matrix && parseGuaranteeLettersMatrix(matrix)) resolve(true);
+                else resolve(false);
+            });
+        });
+    }
+
+    function parseMasterMatrix(rows) {
+        if (!rows || rows.length === 0) return false;
+        const maxCols = Math.max(...rows.slice(0, 10).map(r => (r ? r.length : 0)));
+        const colHeaders = {};
+
+        for (let c = 0; c < maxCols; c++) {
+            let combined = '';
+            for (let r = 0; r < Math.min(rows.length, 6); r++) {
+                if (rows[r] && rows[r][c]) combined += ' ' + cleanText(rows[r][c]);
+            }
+            colHeaders[c] = cleanText(combined);
+        }
+
+        function findCol(keywords, def) {
+            for (let c = 0; c < maxCols; c++) {
+                const text = colHeaders[c] || '';
+                if (keywords.some(k => text.includes(k))) return c;
+            }
+            return def;
+        }
+
+        let codeCol = findCol(['رقم المشروع', 'فولدر المشروع', 'فولدر'], 1);
+        let nameCol = findCol(['اسم المشروع', 'المشروع (مقايسة)', 'مقايسة'], 2);
+        let dateCol = findCol(['تاريخ الاخطار', 'تاريخ الإخطار', 'إخطار'], 3);
+        let monthsCol = findCol(['(شهور)', 'شهور'], 4);
+        let daysCol = findCol(['(يوم)', 'يوم'], 5);
+        let notesCol = findCol(['موقف مذكرة الخفض', 'الخفض والتجاوز'], 6);
+        let valCol = findCol(['قيمة المشروع', 'المشروع (عقد)'], 7);
+        let taxCol = findCol(['موقف الضريب', 'الضريب'], 8);
+        let batCol = findCol(['الكتيبة', 'الكتيبه'], 9);
+        let siteCol = findCol(['الموقع العام', 'الموقع'], 10);
+
+        const list = [];
+        let seq = 1;
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const pCode = cleanText(row[codeCol]);
+            const pName = cleanText(row[nameCol]);
+            const pSite = cleanText(row[siteCol]);
+            let pBat = cleanText(row[batCol]);
+
+            if (!pName && !pSite && !pCode) continue;
+            if (pCode.includes('رقم المشروع') || pName.includes('بيان مشاريع') || pName.includes('اجمالى')) continue;
+
+            if (pBat && /^[0-9]+$/.test(pBat)) pBat = 'ك' + pBat;
+
+            const valNum = parseFloat(String(row[valCol] || '').replace(/[^0-9.-]/g, '')) || 0;
+            const rawMonths = cleanText(row[monthsCol]);
+            const rawDays = cleanText(row[daysCol]);
+
+            let durStr = [];
+            if (rawMonths && parseFloat(rawMonths) > 0) durStr.push(`${rawMonths} شهر`);
+            if (rawDays && parseFloat(rawDays) > 0) durStr.push(`(${rawDays} يوم)`);
+
+            list.push({
+                seq: seq++,
+                code: pCode || `PROJ-${seq}`,
+                name: pName || 'مشروع بدون اسم',
+                date: cleanText(row[dateCol]) || 'غير محدد',
+                durationFormatted: durStr.length > 0 ? durStr.join(' ') : 'غير محدد',
+                notesStatus: cleanText(row[notesCol]) || 'لا يوجد',
+                value: valNum,
+                taxStatus: cleanText(row[taxCol]) || 'غير محدد',
+                generalSite: pSite || 'غير محدد',
+                battalion: pBat || 'غير محدد'
+            });
+        }
+
+        if (list.length > 0) { masterProjects = list; return true; }
+        return false;
+    }
+
+    function parseInvoicesMatrix(rows) {
+        if (!rows || rows.length === 0) return false;
+
+        const idCol       = 2;   // العمود C: رقم المشروع
+        const nameCol     = 3;   // العمود D: اسم المشروع
+        const projValCol  = 4;   // العمود E: قيمة المشروع
+        const typeCol     = 5;   // العمود F: نوع الموقف
+        const certValCol  = 6;   // العمود G: قيمة المستخلص
+        const ratioCol    = 7;   // العمود H: نسبة المستخلص
+        const paidCol     = 8;   // العمود I: ما تم صرفه
+        const statusCol   = 9;   // العمود J: اخر موقف
+        const batCol      = 10;  // العمود K: الكتيبة
+        const locCol      = 11;  // العمود L: مكان المستخلص
+
+        const list = [];
+        let seq = 1;
+
+        for (let i = 6; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const pId = cleanText(row[idCol]);
+            const pName = cleanText(row[nameCol]);
+
+            if (!pId || pId === '-' || pId.includes('اجمالى') || pId.includes('موقف المشروعات') || pId.includes('رقم المشروع')) continue;
+
+            let battalion = cleanText(row[batCol]) || 'غير محدد';
+            if (/^[0-9]+$/.test(battalion)) battalion = 'ك' + battalion;
+
+            const type = cleanText(row[typeCol]) || 'مستخلص';
+            const rawRatio = cleanText(row[ratioCol]);
+            const sanitizedRatio = sanitizeRatio(rawRatio, type);
+            const statusText = cleanText(row[statusCol]) || '-';
+            const locationText = cleanText(row[locCol]) || '-';
+
+            const certValNum = parseFloat(String(row[certValCol] || '').replace(/[^0-9.-]/g, '')) || 0;
+            const paidValNum = parseFloat(String(row[paidCol] || '').replace(/[^0-9.-]/g, '')) || 0;
+            const projValNum = parseFloat(String(row[projValCol] || '').replace(/[^0-9.-]/g, '')) || 0;
+
+            // التحقق الصارم من واقعة الصرف الفعلي للمستخلص الحالي:
+            // إذا كان المستخلص معلقاً، أو متوقفاً، أو قيد الاستيفاء، أو في الهيئة/الكتيبة/الإدارة فلا يعتبر منصرفاً
+            const isBlockedOrPending = locationText.includes('متوقف') || 
+                                       locationText.includes('استيفاء') || 
+                                       statusText.includes('متوقف') || 
+                                       statusText.includes('استيفاء') ||
+                                       locationText.includes('الكتيبة') ||
+                                       locationText.includes('الهيئة') ||
+                                       locationText.includes('الادارة') ||
+                                       locationText.includes('المركزية');
+
+            // لا يعتبر المستخلص منصرفاً إلا إذا نص صراحة على تم الصرف، ولم يكن متوقفاً
+            const isReallyPaid = (locationText.includes('تم الصرف') || statusText.includes('تم الصرف')) && !locationText.includes('متوقف') && !statusText.includes('متوقف');
+
+            // استخراج تاريخ الصرف: لا يلتقط التاريخ إلا إذا كان مقترناً صراحة بـ "تم الصرف"
+            let paymentDate = 'غير مسجل';
+            if (isReallyPaid) {
+                const combinedStatus = statusText + ' ' + locationText;
+                const matchDisburse = combinedStatus.match(/تم الصرف.*?(?:بتاريخ\s*:?\s*)?(\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2}|\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})/);
+                if (matchDisburse && matchDisburse[1]) {
+                    paymentDate = matchDisburse[1];
+                } else {
+                    const fallbackDate = combinedStatus.match(/\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2}|\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}/);
+                    if (fallbackDate) paymentDate = fallbackDate[0];
+                }
+            }
+
+            list.push({
+                seq: seq++,
+                id: pId,
+                name: pName || `مشروع ${pId}`,
+                canonicalName: pName || `مشروع ${pId}`,
+                type: type,
+                proj_val: projValNum,
+                cert_val: certValNum,
+                ratio: sanitizedRatio,
+                paid: paidValNum,
+                status: statusText,
+                battalion: battalion,
+                location: locationText,
+                isPaid: isReallyPaid,
+                paymentDate: paymentDate
+            });
+        }
+
+        if (list.length > 0) { invoiceProjects = list; return true; }
+        return false;
+    }
+
+    function parseInsuranceMatrix(rows) {
+        if (!rows || rows.length === 0) return false;
+        let headerRowIdx = -1;
+        let col = {};
+
+        for (let i = 0; i < Math.min(rows.length, 10); i++) {
+            const r = rows[i].map(c => cleanText(c));
+            if (r.some(c => c.includes('رقم المشروع') || c.includes('رقم الملف') || c.includes('تأمين'))) {
+                headerRowIdx = i;
+                r.forEach((name, idx) => { if (name) col[name] = idx; });
+                break;
+            }
+        }
+
+        function findCol(aliases, def) {
+            for (const alias of aliases) {
+                for (const k of Object.keys(col)) {
+                    if (k.includes(alias)) return col[k];
+                }
+            }
+            return def;
+        }
+
+        let codeCol = findCol(['رقم المشروع', 'كود'], 0);
+        let nameCol = findCol(['اسم المشروع', 'بيان'], 1);
+        let fileCol = findCol(['رقم الملف', 'الملف'], 2);
+        let typeCol = findCol(['نوع المستخلص', 'النوع'], 3);
+        let retCol = findCol(['قيمة التعلية', 'التعلية'], 4);
+        let insValCol = findCol(['قيمة التأمينات', 'التأمينات'], 5);
+        let relCol = findCol(['رد تعلية', 'الرد'], 7);
+        let notesCol = findCol(['ملاحظات', 'الموقف'], 8);
+        let dateCol = findCol(['تاريخ الشهادة', 'تاريخ'], 9);
+
+        if (headerRowIdx === -1) headerRowIdx = 0;
+        const list = [];
+        let seq = 1;
+
+        for (let i = headerRowIdx + 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const pCode = cleanText(row[codeCol]);
+            const pName = cleanText(row[nameCol]);
+            if (!pCode && !pName) continue;
+            if (pCode.includes('رقم المشروع') || pName.includes('اسم المشروع')) continue;
+
+            list.push({
+                seq: seq++,
+                code: pCode,
+                name: pName || 'غير محدد',
+                canonicalName: pName || 'غير محدد',
+                fileNo: cleanText(row[fileCol]) || '-',
+                certType: cleanText(row[typeCol]) || '-',
+                retention: parseFloat(String(row[retCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                insuranceVal: parseFloat(String(row[insValCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                releasedVal: parseFloat(String(row[relCol] || '').replace(/[^0-9.-]/g, '')) || 0,
+                notes: cleanText(row[notesCol]) || '-',
+                certDate: cleanText(row[dateCol]) || '-'
+            });
+        }
+
+        if (list.length > 0) { insuranceProjects = list; return true; }
+        return false;
+    }
+
+    function parseGuaranteeLettersMatrix(rows) {
+        if (!rows || rows.length === 0) return false;
+
+        // خريطة الأعمدة الصريحة المطابقة لشيت خطابات الضمان (الصف رقم 3 عناوين، والبيانات من الصف 4):
+        // العمود A (0): رقم المشروع (مثال: 88421072)
+        // العمود B (1): اسم المشروع
+        // العمود C (2): تاريخ الاخطار (مثال: 2021/08/25)
+        // العمود D (3): تاريخ خطاب الضمان (مثال: 2021/09/08)
+        // العمود E (4): رقم خطاب الضمان (مثال: 00187LLG375488)
+        // العمود F (5): قيمة خطاب الضمان (مثال: 166120)
+        // العمود G (6): تاريخ إنتهاء خطاب الضمان (مثال: 2022/12/25)
+        // العمود H (7): حالة الصرف (مثال: لم يصرف ختامي / تم الرد ...)
+        // العمود I (8): رد خطاب الضمان (مثال: 0 أو 40000)
+        // العمود J (9): تاريخ انتهاء العملية
+        // العمود K (10): تاريخ التسليم الابتدائي
+        const projCodeCol        = 0;
+        const projNameCol        = 1;
+        const noticeDateCol      = 2;
+        const letterDateCol      = 3;
+        const letterNoCol        = 4;
+        const letterValCol       = 5;
+        const letterExpDateCol   = 6;
+        const disburseStatusCol  = 7;
+        const returnAmountCol    = 8;
+        const opEndDateCol       = 9;
+        const deliveryDateCol    = 10;
+
+        const list = [];
+        let seq = 1;
+
+        // البيانات تبدأ من السطر الرابع (index = 3)
+        for (let i = 3; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const pCode = cleanText(row[projCodeCol]);
+            const pName = cleanText(row[projNameCol]);
+            const letterNo = cleanText(row[letterNoCol]);
+            const rawVal = row[letterValCol];
+
+            if (!pCode && !pName && !letterNo) continue;
+            if (pCode.includes('رقم المشروع') || letterNo.includes('رقم خطاب')) continue;
+
+            const valNum = parseFloat(String(rawVal || '').replace(/[^0-9.-]/g, '')) || 0;
+            const retNum = parseFloat(String(row[returnAmountCol] || '').replace(/[^0-9.-]/g, '')) || 0;
+
+            list.push({
+                seq: seq++,
+                projectCode: pCode || '-',
+                projectName: pName || 'غير محدد',
+                canonicalProjectName: pName || 'غير محدد',
+                noticeDate: cleanText(row[noticeDateCol]) || '-',
+                issueDate: cleanText(row[letterDateCol]) || '-',
+                letterNo: letterNo || '-',
+                value: valNum,
+                expiryDate: cleanText(row[letterExpDateCol]) || '-',
+                disbursementStatus: cleanText(row[disburseStatusCol]) || '-',
+                releasedAmount: retNum,
+                opEndDate: cleanText(row[opEndDateCol]) || '-',
+                deliveryDate: cleanText(row[deliveryDateCol]) || '-',
+                bank: 'محدد بالشيت',
+                type: 'نهائي'
+            });
+        }
+
+        if (list.length > 0) {
+            guaranteeLetters = list;
+            return true;
+        }
+        return false;
+    }
+
+    function switchView(viewName) {
+        activeView = viewName;
+        ['master', 'invoices', 'insurance', 'guarantee', 'dashboard'].forEach(v => {
+            const btn = document.getElementById(`tabBtn-${v}`);
+            const sec = document.getElementById(`view-${v}`);
+            if (!btn || !sec) return;
+
+            if (v === viewName) {
+                let colorClass = 'bg-sky-600';
+                if (v === 'invoices') colorClass = 'bg-emerald-600';
+                if (v === 'insurance') colorClass = 'bg-amber-600';
+                if (v === 'guarantee') colorClass = 'bg-purple-600';
+                btn.className = `flex items-center gap-2 px-4 py-2 rounded-xl font-bold ${colorClass} text-white transition whitespace-nowrap shadow-md`;
+                sec.classList.remove('hidden');
+            } else {
+                btn.className = 'flex items-center gap-2 px-4 py-2 rounded-xl font-bold bg-dark-800 text-slate-300 hover:bg-dark-700 transition whitespace-nowrap';
+                sec.classList.add('hidden');
+            }
+        });
+
+        if (viewName === 'dashboard') renderDashboardCharts();
+    }
+
+    function refreshMasterUI() {
+        document.getElementById('nav-master-count').innerText = masterProjects.length;
+
+        const siteSelect = document.getElementById('masterFilterSite');
+        const currentSite = siteSelect.value;
+        const sites = [...new Set(masterProjects.map(p => p.generalSite).filter(s => s && s !== 'غير محدد'))].sort();
+        siteSelect.innerHTML = '<option value="">جميع المواقع العامة</option>' + sites.map(s => `<option value="${s}" ${s === currentSite ? 'selected' : ''}>${s}</option>`).join('');
+
+        const batSelect = document.getElementById('masterFilterBattalion');
+        const currentBat = batSelect.value;
+        const bats = [...new Set(masterProjects.map(p => p.battalion).filter(b => b && b !== 'غير محدد'))].sort();
+        batSelect.innerHTML = '<option value="">جميع الكتائب</option>' + bats.map(b => `<option value="${b}" ${b === currentBat ? 'selected' : ''}>${b}</option>`).join('');
+
+        renderMasterTable();
+    }
+
+    function renderMasterTable() {
+        const tbody = document.getElementById('masterTableBody');
+        const search = document.getElementById('masterSearchInput').value.trim().toLowerCase();
+        const siteFilter = document.getElementById('masterFilterSite').value;
+        const batFilter = document.getElementById('masterFilterBattalion').value;
+
+        const filtered = masterProjects.filter(p => {
+            if (siteFilter && p.generalSite !== siteFilter) return false;
+            if (batFilter && p.battalion !== batFilter) return false;
+            if (search) {
+                const c = `${p.code} ${p.name} ${p.generalSite} ${p.battalion} ${p.date}`.toLowerCase();
+                if (!c.includes(search)) return false;
+            }
+            return true;
+        });
+
+        updateMasterDynamicStats(filtered);
+        document.getElementById('masterTableCounter').innerText = `عرض ${filtered.length} من ${masterProjects.length}`;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">لا توجد مشروعات مطابقة للبحث</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(item => {
+            const cleanCode = cleanId(item.code);
+            const invList = invoiceProjects.filter(inv => cleanId(inv.id) === cleanCode);
+            const insList = insuranceProjects.filter(ins => cleanId(ins.code) === cleanCode);
+            const totalInsPaid = insList.reduce((s, ins) => s + ins.insuranceVal, 0);
+            const letter = getProjectLetterOfGuarantee(item.code);
+
+            const paidVal = getProjectActualDisbursed(item.code);
+
+            const finalInv = invList.find(inv => inv.type.includes('ختامي') || inv.type.includes('ختامى') || inv.ratio === '100%');
+            let finalPaymentStatus = 'لم يقدم بعد';
+
+            if (letter && isLetterExplicitlyReturned(letter)) {
+                const retDate = extractReturnDate(letter);
+                finalPaymentStatus = `<span class="text-emerald-400 font-bold">تم الصرف والرد (${retDate})</span>`;
+            } else if (finalInv) {
+                if (finalInv.isPaid && finalInv.paid > 0 && finalInv.paymentDate && finalInv.paymentDate !== 'غير مسجل') {
+                    finalPaymentStatus = finalInv.paymentDate;
+                } else if (finalInv.isPaid && finalInv.paid > 0) {
+                    finalPaymentStatus = 'تم الصرف';
+                } else {
+                    finalPaymentStatus = `قيد الإجراءات (${finalInv.location})`;
+                }
+            }
+
+            const standardGuaranteeVal = item.value * 0.05;
+            const guaranteeBadge = letter ? `
+                <div class="font-bold text-indigo-300 font-mono text-xs flex flex-col items-center">
+                    <span>${formatEGP(letter.value > 0 ? letter.value : standardGuaranteeVal)}</span>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded ${isLetterExplicitlyReturned(letter) ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'} text-[10px] mt-0.5" title="${isLetterExplicitlyReturned(letter) ? 'تم صرف الختامي واسترداد أصل الخطاب' : 'لا يوجد خصم نقدي من الدفعة لوجود خطاب ضمان بنكي'}">
+                        <i class="fa-solid ${isLetterExplicitlyReturned(letter) ? 'fa-circle-check text-emerald-400' : 'fa-file-shield text-indigo-400'} text-[9px]"></i>
+                        ${isLetterExplicitlyReturned(letter) ? 'تم رد الخطاب' : 'خطاب ضمان (LG)'}
+                    </span>
+                </div>
+            ` : `
+                <div class="font-mono text-xs text-purple-300 flex flex-col items-center">
+                    <span>${formatEGP(standardGuaranteeVal)}</span>
+                    <span class="text-[10px] text-slate-400">خصم نقدي 5%</span>
+                </div>
+            `;
+
+            const insDisplay = insList.length > 0 ? `
+                <div class="flex flex-col items-start font-mono text-xs">
+                    <span class="text-indigo-300 font-bold">${formatEGP(totalInsPaid)}</span>
+                    ${insList.length > 1 ? `<span class="text-[10px] text-amber-400 font-sans">(${insList.length} مستخلصات)</span>` : ''}
+                </div>
+            ` : `<span class="text-slate-500 font-mono text-xs">0 ج.م</span>`;
+
+            return `
+                <tr class="hover:bg-dark-800/40 transition">
+                    <td class="p-3 text-center text-slate-500 font-mono text-xs font-bold">${item.seq}</td>
+                    <td class="p-3 text-center font-mono font-bold text-sky-400 whitespace-nowrap bg-dark-900/60 border-x border-dark-700/40 cursor-pointer hover:underline" onclick="showMasterDetails(${item.seq})">
+                        ${item.code}
+                    </td>
+                    <td class="p-3 max-w-sm">
+                        <div class="font-bold text-white hover:text-sky-300 cursor-pointer" onclick="showMasterDetails(${item.seq})">
+                            ${item.name}
+                        </div>
+                        <div class="text-[11px] text-slate-400">${item.generalSite}</div>
+                    </td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-xs">${item.battalion}</span></td>
+                    <td class="p-3 text-center font-mono text-xs text-slate-300">${item.date}</td>
+                    <td class="p-3 font-mono text-xs text-left font-bold text-cyan-300">${formatEGP(item.value)}</td>
+                    <td class="p-3 font-mono text-xs text-left font-bold ${paidVal > 0 ? 'text-emerald-400' : 'text-slate-500'}">${formatEGP(paidVal)}</td>
+                    <td class="p-3 text-left">${insDisplay}</td>
+                    <td class="p-3 text-center font-mono text-xs font-semibold">${finalPaymentStatus}</td>
+                    <td class="p-3 text-center">${guaranteeBadge}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="showMasterDetails(${item.seq})" class="px-2.5 py-1.5 rounded-lg bg-sky-600/20 text-sky-300 border border-sky-500/30 hover:bg-sky-600 hover:text-white transition text-xs flex items-center gap-1.5 mx-auto font-bold cursor-pointer">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <span>الكارت</span>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateMasterDynamicStats(filtered) {
+        const isFiltered = filtered.length !== masterProjects.length;
+        document.getElementById('master-total-count').innerText = filtered.length;
+        document.getElementById('master-total-all-tag').innerText = `${masterProjects.length} كلي`;
+        document.getElementById('master-filter-indicator').innerText = isFiltered ? `(مفلتر: ${filtered.length})` : 'كل المشروعات';
+        document.getElementById('master-filter-indicator').className = isFiltered ? 'text-amber-400 font-bold animate-pulse' : 'text-sky-400/90';
+
+        const totalVal = filtered.reduce((s, p) => s + p.value, 0);
+        document.getElementById('master-total-val').innerText = formatEGP(totalVal);
+
+        const disbursedVal = filtered.reduce((s, p) => s + getProjectActualDisbursed(p.code), 0);
+        document.getElementById('master-total-disbursed').innerText = formatEGP(disbursedVal);
+        document.getElementById('master-disbursed-ratio').innerText = totalVal > 0 ? `${((disbursedVal / totalVal) * 100).toFixed(1)}%` : '0%';
+
+        const filteredCodes = new Set(filtered.map(p => cleanId(p.code)));
+        const insPaidVal = insuranceProjects
+            .filter(ins => filteredCodes.has(cleanId(ins.code)))
+            .reduce((s, ins) => s + ins.insuranceVal, 0);
+
+        document.getElementById('master-total-ins-paid').innerText = formatEGP(insPaidVal);
+    }
+
+    function applyMasterFilters() { renderMasterTable(); }
+    function resetMasterFilters() {
+        document.getElementById('masterSearchInput').value = '';
+        document.getElementById('masterFilterSite').value = '';
+        document.getElementById('masterFilterBattalion').value = '';
+        renderMasterTable();
+    }
+
+    function refreshInvoiceUI() {
+        document.getElementById('nav-invoices-count').innerText = invoiceProjects.length;
+
+        const batSelect = document.getElementById('invFilterBattalion');
+        const currentBat = batSelect.value;
+        const bats = [...new Set(invoiceProjects.map(p => p.battalion).filter(b => b && b !== 'غير محدد'))].sort();
+        batSelect.innerHTML = '<option value="">جميع الكتائب</option>' + bats.map(b => `<option value="${b}" ${b === currentBat ? 'selected' : ''}>${b}</option>`).join('');
+
+        renderInvoicesTable();
+    }
+
+    function renderInvoicesTable() {
+        const tbody = document.getElementById('invoicesTableBody');
+        const search = document.getElementById('invSearchInput').value.trim().toLowerCase();
+        const loc = document.getElementById('invFilterLocation').value;
+        const bat = document.getElementById('invFilterBattalion').value;
+
+        const filtered = invoiceProjects.filter(p => {
+            if (loc && !p.location.includes(loc) && !p.status.includes(loc)) return false;
+            if (bat && !p.battalion.includes(bat)) return false;
+            if (search && !`${p.id} ${p.canonicalName} ${p.name} ${p.battalion} ${p.status}`.toLowerCase().includes(search)) return false;
+            return true;
+        });
+
+        updateInvoiceDynamicStats(filtered);
+        document.getElementById('invTableCounter').innerText = `عرض ${filtered.length} من ${invoiceProjects.length}`;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">لا توجد مستخلصات مطابقة</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(item => `
+            <tr class="hover:bg-dark-800/40 transition">
+                <td class="p-3 text-center text-slate-500 font-mono text-xs font-bold">${item.seq}</td>
+                <td class="p-3 text-center font-mono font-bold text-emerald-400 bg-dark-900/70 border-x border-dark-700/50 cursor-pointer hover:underline" onclick="showInvoiceDetails('${item.id}', ${item.seq})">${item.id}</td>
+                <td class="p-3 max-w-xs font-bold text-white cursor-pointer" onclick="showInvoiceDetails('${item.id}', ${item.seq})">
+                    <div class="hover:text-emerald-300 truncate" title="${item.canonicalName}">${item.canonicalName}</div>
+                    ${item.canonicalName !== item.name ? `<div class="text-[10px] text-slate-400 truncate">بالشيت: ${item.name}</div>` : ''}
+                </td>
+                <td class="p-3 text-center"><span class="px-2 py-0.5 rounded bg-dark-800 text-slate-300 text-xs">${item.battalion}</span></td>
+                <td class="p-3 text-center text-xs text-slate-300 font-semibold">${item.type}</td>
+                <td class="p-3 text-center font-mono text-xs text-cyan-400 font-bold bg-dark-950/60">${item.ratio}</td>
+                <td class="p-3 font-mono text-xs text-left text-amber-300 font-bold">${formatEGP(item.cert_val)}</td>
+                <td class="p-3 font-mono text-xs text-left text-emerald-400 font-bold">${formatEGP(item.paid)}</td>
+                <td class="p-3 text-center text-xs">${item.location}</td>
+                <td class="p-3 max-w-xs truncate text-xs text-slate-300">${item.status}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="crossLinkToMaster('${item.id}')" class="p-1.5 rounded-lg bg-sky-600/20 text-sky-300 border border-sky-500/30 text-xs hover:bg-sky-600 hover:text-white" title="كارت العقد بالبيان"><i class="fa-solid fa-file-contract"></i></button>
+                        <button onclick="crossLinkToInsurance('${item.id}')" class="p-1.5 rounded-lg bg-amber-600/20 text-amber-300 border border-amber-500/30 text-xs hover:bg-amber-600 hover:text-white" title="موقف التأمينات"><i class="fa-solid fa-shield-halved"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updateInvoiceDynamicStats(filtered) {
+        const isFiltered = filtered.length !== invoiceProjects.length;
+        document.getElementById('inv-total-count').innerText = filtered.length;
+        document.getElementById('inv-total-all-tag').innerText = `${invoiceProjects.length} كلي`;
+        document.getElementById('inv-filter-indicator').innerText = isFiltered ? `(مفلتر: ${filtered.length})` : 'كل المستخلصات';
+        document.getElementById('inv-filter-indicator').className = isFiltered ? 'text-amber-400 font-bold animate-pulse' : 'text-emerald-400/90';
+
+        const totalPaid = filtered.reduce((s, p) => s + p.paid, 0);
+        const totalCert = filtered.reduce((s, p) => s + p.cert_val, 0);
+        const finalCount = filtered.filter(p => p.type.includes('ختامي') || p.type.includes('ختامى') || p.ratio === '100%').length;
+
+        document.getElementById('inv-total-paid').innerText = formatEGP(totalPaid);
+        document.getElementById('inv-total-cert-val').innerText = formatEGP(totalCert);
+        document.getElementById('inv-final-count').innerText = finalCount;
+    }
+
+    function applyInvoiceFilters() { renderInvoicesTable(); }
+    function resetInvoiceFilters() {
+        document.getElementById('invSearchInput').value = '';
+        document.getElementById('invFilterLocation').value = '';
+        document.getElementById('invFilterBattalion').value = '';
+        renderInvoicesTable();
+    }
+
+    function refreshInsuranceUI() {
+        document.getElementById('nav-insurance-count').innerText = insuranceProjects.length;
+        renderInsuranceTable();
+    }
+
+    function renderInsuranceTable() {
+        const tbody = document.getElementById('insuranceTableBody');
+        const search = document.getElementById('insSearchInput').value.trim().toLowerCase();
+        const statFilter = document.getElementById('insFilterStatus').value;
+
+        const filtered = insuranceProjects.filter(p => {
+            if (statFilter && !p.notes.includes(statFilter)) return false;
+            if (search && !`${p.code} ${p.canonicalName} ${p.name} ${p.fileNo} ${p.notes}`.toLowerCase().includes(search)) return false;
+            return true;
+        });
+
+        updateInsuranceDynamicStats(filtered);
+        document.getElementById('insTableCounter').innerText = `عرض ${filtered.length} من ${insuranceProjects.length}`;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">لا توجد سجلات تأمينات مطابقة</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(item => `
+            <tr class="hover:bg-dark-800/40 transition">
+                <td class="p-3 text-center text-slate-500 font-mono text-xs font-bold">${item.seq}</td>
+                <td class="p-3 text-center font-mono font-bold text-amber-400 bg-dark-900/70 border-x border-dark-700/50">${item.code}</td>
+                <td class="p-3 max-w-xs font-bold text-white truncate" title="${item.canonicalName}">
+                    ${item.canonicalName}
+                </td>
+                <td class="p-3 text-center font-mono text-sky-400 text-xs font-bold">${item.fileNo}</td>
+                <td class="p-3 text-center text-xs text-slate-300">${item.certType}</td>
+                <td class="p-3 font-mono text-xs text-left text-rose-400 font-bold">${formatEGP(item.retention)}</td>
+                <td class="p-3 font-mono text-xs text-left text-indigo-300 font-bold">${formatEGP(item.insuranceVal)}</td>
+                <td class="p-3 font-mono text-xs text-left text-emerald-400 font-bold">${formatEGP(item.releasedVal)}</td>
+                <td class="p-3 text-xs max-w-xs truncate ${item.notes.includes('يلزم الدفع') ? 'text-amber-300 font-bold' : 'text-slate-300'}">${item.notes}</td>
+                <td class="p-3 text-center font-mono text-xs text-slate-400">${item.certDate}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="crossLinkToMaster('${item.code}')" class="p-1.5 rounded-lg bg-sky-600/20 text-sky-300 border border-sky-500/30 text-xs hover:bg-sky-600 hover:text-white" title="العقد بالبيان"><i class="fa-solid fa-file-contract"></i></button>
+                        <button onclick="crossLinkToInvoice('${item.code}')" class="p-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 text-xs hover:bg-emerald-600 hover:text-white" title="المستخلصات"><i class="fa-solid fa-receipt"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updateInsuranceDynamicStats(filtered) {
+        const isFiltered = filtered.length !== insuranceProjects.length;
+        document.getElementById('ins-total-count').innerText = filtered.length;
+        document.getElementById('ins-total-all-tag').innerText = `${insuranceProjects.length} كلي`;
+        document.getElementById('ins-filter-indicator').innerText = isFiltered ? `(مفلتر: ${filtered.length})` : 'كل الملفات';
+        document.getElementById('ins-filter-indicator').className = isFiltered ? 'text-amber-400 font-bold animate-pulse' : 'text-amber-400/90';
+
+        const totRet = filtered.reduce((s, p) => s + p.retention, 0);
+        const totIns = filtered.reduce((s, p) => s + p.insuranceVal, 0);
+        const totRel = filtered.reduce((s, p) => s + p.releasedVal, 0);
+
+        document.getElementById('ins-total-retention').innerText = formatEGP(totRet);
+        document.getElementById('ins-total-paid').innerText = formatEGP(totIns);
+        document.getElementById('ins-total-released').innerText = formatEGP(totRel);
+    }
+
+    function applyInsuranceFilters() { renderInsuranceTable(); }
+    function resetInsuranceFilters() {
+        document.getElementById('insSearchInput').value = '';
+        document.getElementById('insFilterStatus').value = '';
+        renderInsuranceTable();
+    }
+
+    function refreshGuaranteeUI() {
+        document.getElementById('nav-guarantee-count').innerText = masterProjects.length;
+        renderGuaranteeTable();
+    }
+
+    function renderGuaranteeTable() {
+        const tbody = document.getElementById('guaranteeTableBody');
+        const search = document.getElementById('guarSearchInput').value.trim().toLowerCase();
+        const typeFilter = document.getElementById('guarFilterType').value;
+        const statFilter = document.getElementById('guarFilterStatus').value;
+        const now = new Date();
+
+        const list = masterProjects.map(m => {
+            const cleanCode = cleanId(m.code);
+            const invList = invoiceProjects.filter(inv => cleanId(inv.id) === cleanCode);
+            const finalInv = invList.find(inv => (inv.type.includes('ختامي') || inv.type.includes('ختامى') || inv.ratio === '100%'));
+            const letter = getProjectLetterOfGuarantee(m.code);
+
+            const hasLetter = !!letter;
+            const isReturned = isLetterExplicitlyReturned(letter);
+            const standardGuaranteeVal = m.value * 0.05;
+            const guaranteeAmount = (letter && letter.value > 0) ? letter.value : standardGuaranteeVal;
+            const returnedAmount = letter ? (letter.releasedAmount > 0 ? letter.releasedAmount : (isReturned ? guaranteeAmount : 0)) : 0;
+
+            let paymentDateStr = 'لم يصرف الختامي';
+            let releaseDateStr = 'في انتظار صرف الختامي';
+            let statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400">لم يصرف الختامي</span>';
+            let statusKey = 'لم يصرف الختامي';
+
+            if (isReturned) {
+                const retDate = extractReturnDate(letter);
+                paymentDateStr = retDate ? `تم الصرف (${retDate})` : 'تم الصرف والرد';
+                releaseDateStr = retDate ? `تم الرد (${retDate})` : 'تم الرد والاسترداد';
+                statusKey = 'تم الرد';
+                statusBadge = '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"><i class="fa-solid fa-circle-check text-emerald-400"></i> تم صرف الختامي ورد الخطاب</span>';
+            } else if (finalInv && finalInv.isPaid && finalInv.paid > 0 && finalInv.paymentDate && finalInv.paymentDate !== 'غير مسجل') {
+                paymentDateStr = finalInv.paymentDate;
+                const relDate = calculateGuaranteeReleaseDate(finalInv.paymentDate);
+                if (relDate) {
+                    releaseDateStr = formatDateDisplay(relDate);
+                    if (now >= relDate) {
+                        statusKey = 'مستحق الرد';
+                        statusBadge = hasLetter 
+                            ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse"><i class="fa-solid fa-bell mr-1"></i> مستحق استرداد خطاب الضمان (انتهت السنة)</span>'
+                            : '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse"><i class="fa-solid fa-triangle-exclamation mr-1"></i> مستحق رد التأمين النهائي (انتهت السنة)</span>';
+                    } else {
+                        statusKey = 'ساري';
+                        const diffDays = Math.ceil((relDate - now) / (1000 * 60 * 60 * 24));
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/20">ساري (متبقي ${diffDays} يوم)</span>`;
+                    }
+                } else {
+                    statusKey = 'ساري';
+                    statusBadge = '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400">تم صرف الختامي</span>';
+                }
+            } else if (finalInv) {
+                paymentDateStr = `قيد الإجراءات (${finalInv.location})`;
+                releaseDateStr = 'معلق لحين الصرف الفعلي';
+                statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">الختامي قيد الصرف (${finalInv.location})</span>`;
+            }
+
+            return {
+                master: m,
+                hasLetter: hasLetter,
+                isReturned: isReturned,
+                letter: letter,
+                guaranteeAmount: guaranteeAmount,
+                returnedAmount: returnedAmount,
+                paymentDateStr: paymentDateStr,
+                releaseDateStr: releaseDateStr,
+                statusBadge: statusBadge,
+                statusKey: statusKey
+            };
+        });
+
+        const filtered = list.filter(item => {
+            if (typeFilter === 'خطاب ضمان' && !item.hasLetter) return false;
+            if (typeFilter === 'خصم نقدي' && item.hasLetter) return false;
+            if (statFilter && !item.statusKey.includes(statFilter)) return false;
+            if (search) {
+                const letterInfo = item.letter ? `${item.letter.letterNo} ${item.letter.disbursementStatus}` : '';
+                if (!`${item.master.code} ${item.master.name} ${item.master.battalion} ${letterInfo}`.toLowerCase().includes(search)) return false;
+            }
+            return true;
+        });
+
+        updateGuaranteeDynamicStats(filtered);
+        document.getElementById('guarTableCounter').innerText = `عرض ${filtered.length} من ${list.length}`;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-slate-500">لا توجد مشروعات مطابقة لبيانات الضمان</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map((item, idx) => {
+            const coverageBadge = item.hasLetter ? `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold ${item.isReturned ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'}">
+                    <i class="fa-solid ${item.isReturned ? 'fa-circle-check text-emerald-400' : 'fa-file-shield text-indigo-400'}"></i>
+                    <span>خطاب ضمان بنكي (LG)</span>
+                </span>
+            ` : `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                    <i class="fa-solid fa-money-bill-wave text-purple-400"></i>
+                    <span>خصم نقدي (5%)</span>
+                </span>
+            `;
+
+            const letterDetailsCell = item.hasLetter ? `
+                <div class="text-xs">
+                    <div class="font-mono font-bold text-amber-300" title="رقم الخطاب">${item.letter.letterNo}</div>
+                    <div class="text-[10px] text-slate-400">تاريخه: ${item.letter.issueDate} | انتهاء: ${item.letter.expiryDate}</div>
+                </div>
+            ` : `<span class="text-slate-600 text-xs">-</span>`;
+
+            return `
+                <tr class="hover:bg-dark-800/40 transition">
+                    <td class="p-3 text-center text-slate-500 font-mono text-xs font-bold">${idx + 1}</td>
+                    <td class="p-3 text-center font-mono font-bold text-purple-400 bg-dark-900/70 border-x border-dark-700/50 cursor-pointer hover:underline" onclick="showMasterDetails(${item.master.seq})">${item.master.code}</td>
+                    <td class="p-3 max-w-xs font-bold text-white truncate cursor-pointer hover:text-purple-300" onclick="showMasterDetails(${item.master.seq})">${item.master.name}</td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 rounded bg-dark-800 text-slate-300 text-xs">${item.master.battalion}</span></td>
+                    <td class="p-3 text-center">${coverageBadge}</td>
+                    <td class="p-3 font-mono text-xs text-left font-bold ${item.hasLetter ? 'text-indigo-300' : 'text-purple-300'}">${formatEGP(item.guaranteeAmount)}</td>
+                    <td class="p-3 text-center">${letterDetailsCell}</td>
+                    <td class="p-3 text-center font-mono text-xs ${item.isReturned ? 'text-emerald-400 font-bold' : (item.paymentDateStr.includes('قيد') ? 'text-amber-400' : 'text-slate-300')}">${item.paymentDateStr}</td>
+                    <td class="p-3 font-mono text-xs text-left font-bold ${item.returnedAmount > 0 ? 'text-emerald-400' : 'text-slate-500'}">${formatEGP(item.returnedAmount)}</td>
+                    <td class="p-3 text-center font-mono text-xs text-amber-300 font-bold">${item.releaseDateStr}</td>
+                    <td class="p-3 text-center">${item.statusBadge}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="showMasterDetails(${item.master.seq})" class="p-1.5 rounded-lg bg-dark-800 hover:bg-purple-600 hover:text-white text-slate-400 text-xs transition" title="فتح الكارت"><i class="fa-solid fa-up-right-from-square"></i></button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateGuaranteeDynamicStats(filtered) {
+        const isFiltered = filtered.length !== masterProjects.length;
+        document.getElementById('guar-total-all-tag').innerText = `${masterProjects.length} كلي`;
+        document.getElementById('guar-filter-indicator').innerText = isFiltered ? `(مفلتر: ${filtered.length})` : 'كل المشاريع';
+        document.getElementById('guar-filter-indicator').className = isFiltered ? 'text-amber-400 font-bold animate-pulse' : 'text-purple-400/90';
+
+        const totalGuar = filtered.reduce((s, p) => s + p.guaranteeAmount, 0);
+        const lettersCount = filtered.filter(p => p.hasLetter).length;
+        const returnedCount = filtered.filter(p => p.statusKey === 'تم الرد').length;
+        const dueCount = filtered.filter(p => p.statusKey === 'مستحق الرد').length;
+
+        document.getElementById('guar-total-val').innerText = formatEGP(totalGuar);
+        document.getElementById('guar-letters-count').innerText = lettersCount;
+        document.getElementById('guar-returned-count').innerText = returnedCount;
+        document.getElementById('guar-due-count').innerText = dueCount;
+    }
+
+    function applyGuaranteeFilters() { renderGuaranteeTable(); }
+    function resetGuaranteeFilters() {
+        document.getElementById('guarSearchInput').value = '';
+        document.getElementById('guarFilterType').value = '';
+        document.getElementById('guarFilterStatus').value = '';
+        renderGuaranteeTable();
+    }
+
+    function showMasterDetails(seq) {
+        const item = masterProjects.find(p => p.seq === seq);
+        if (!item) return;
+
+        const cleanCode = cleanId(item.code);
+        const linkedInv = invoiceProjects.filter(inv => cleanId(inv.id) === cleanCode);
+        const linkedInsList = insuranceProjects.filter(ins => cleanId(ins.code) === cleanCode);
+        const totalInsPaid = linkedInsList.reduce((s, ins) => s + ins.insuranceVal, 0);
+        const totalRetention = linkedInsList.reduce((s, ins) => s + ins.retention, 0);
+        const totalReleased = linkedInsList.reduce((s, ins) => s + ins.releasedVal, 0);
+        const letter = getProjectLetterOfGuarantee(item.code);
+
+        const totalPaid = getProjectActualDisbursed(item.code);
+        const standardGuaranteeVal = item.value * 0.05;
+        const finalGuaranteeVal = (letter && letter.value > 0) ? letter.value : standardGuaranteeVal;
+
+        const finalInv = linkedInv.find(inv => inv.type.includes('ختامي') || inv.type.includes('ختامى') || inv.ratio === '100%');
+        const hasActuallyPaidFinal = finalInv && finalInv.isPaid && finalInv.paid > 0 && finalInv.paymentDate && finalInv.paymentDate !== 'غير مسجل';
+        let finalPaymentDate = hasActuallyPaidFinal ? finalInv.paymentDate : null;
+
+        // التحقق من حالة الرد الصريحة من شيت خطابات الضمان
+        const isLetterExplicitlyReturned = letter && (
+            (letter.disbursementStatus && letter.disbursementStatus.includes('تم الرد')) || 
+            (letter.releasedAmount > 0)
+        );
+
+        let releaseDateStr = 'لم يحدد بعد (يلزم صرف الختامي أولاً)';
+        let releaseStatus = '<span class="text-slate-400">فترة الضمان لم تبدأ بعد - المستخلص الختامي لم يُصرف بعد</span>';
+
+        if (isLetterExplicitlyReturned) {
+            const returnDateMatch = letter.disbursementStatus.match(/\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2}|\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}/);
+            const returnDate = returnDateMatch ? returnDateMatch[0] : (letter.deliveryDate !== '-' ? letter.deliveryDate : 'مسجل بالشيت');
+            finalPaymentDate = `معتمد كمنصرف ختامي (${returnDate})`;
+            releaseDateStr = `تم الاسترداد والرد (${returnDate})`;
+            releaseStatus = `
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    <span>تم صرف الختامي ورد خطاب الضمان بنجاح (المبلغ المسترد: ${formatEGP(letter.releasedAmount > 0 ? letter.releasedAmount : letter.value)})</span>
+                </div>
+            `;
+        } else if (finalPaymentDate) {
+            const relDate = calculateGuaranteeReleaseDate(finalPaymentDate);
+            if (relDate) {
+                releaseDateStr = formatDateDisplay(relDate);
+                const now = new Date();
+                if (now >= relDate) {
+                    releaseStatus = letter 
+                        ? '<span class="text-amber-400 font-bold"><i class="fa-solid fa-bell"></i> انقضت السنة كاملة - يحق استرداد أصل خطاب الضمان البنكي فوراً من الجهة</span>'
+                        : '<span class="text-amber-400 font-bold"><i class="fa-solid fa-bell"></i> انقضت السنة كاملة - يحق رد التأمين النهائي فوراً</span>';
+                } else {
+                    const days = Math.ceil((relDate - now) / (1000 * 60 * 60 * 24));
+                    releaseStatus = `<span class="text-sky-400">ساري في فترة الضمان (متبقي ${days} يوم على ميعاد الرد / الاسترداد)</span>`;
+                }
+            }
+        } else if (finalInv) {
+            releaseStatus = `<span class="text-amber-400 font-semibold"><i class="fa-solid fa-clock"></i> المستخلص الختامي لم يُصرف بعد (${finalInv.location || finalInv.status}) - فترة الضمان معلقة</span>`;
+        }
+
+        const guaranteeCardSection = letter ? `
+            <div class="p-4 bg-gradient-to-r from-indigo-950/40 via-dark-900 to-purple-950/40 rounded-xl border border-indigo-500/40 mb-4 space-y-2.5">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-xs font-bold text-indigo-300 flex items-center gap-2">
+                        <i class="fa-solid fa-file-shield text-indigo-400 text-sm"></i>
+                        <span>موقف التأمين النهائي: مغطى بخطاب ضمان بنكي (LG)</span>
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <i class="fa-solid fa-circle-check"></i> معفى من الخصم النقدي من الدفعات
+                    </span>
+                </div>
+                <div class="p-3 rounded-lg bg-dark-950/80 border border-dark-800 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[11px]">رقم خطاب الضمان:</span>
+                        <span class="font-mono font-bold text-amber-300">${letter.letterNo}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[11px]">حالة الصرف بالشيت:</span>
+                        <span class="font-bold ${isLetterExplicitlyReturned ? 'text-emerald-400' : 'text-white'}">${letter.disbursementStatus}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[11px]">قيمة الخطاب (العمود F):</span>
+                        <span class="font-mono font-bold text-emerald-400">${formatEGP(letter.value)}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[11px]">رد خطاب الضمان:</span>
+                        <span class="font-mono font-bold text-sky-300">${formatEGP(letter.releasedAmount)}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 border-t border-dark-800">
+                    <div>
+                        <span class="text-slate-400">تاريخ صرف المستخلص الختامي: </span>
+                        <span class="font-bold ${finalPaymentDate ? 'text-white' : 'text-amber-400'} font-mono">${finalPaymentDate || (finalInv ? `لم يصرف بعد (${finalInv.location})` : 'لم يقدم بعد')}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">ميعاد استرداد الخطاب (+ سنة): </span>
+                        <span class="font-bold text-amber-300 font-mono">${releaseDateStr}</span>
+                    </div>
+                </div>
+                <div class="text-xs pt-1">${releaseStatus}</div>
+            </div>
+        ` : `
+            <div class="p-4 bg-gradient-to-r from-purple-950/30 to-dark-950 rounded-xl border border-purple-500/30 mb-4 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-purple-300 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        موقف التأمين النهائي: خصم نقدي من المستخلصات (5%)
+                    </span>
+                    <span class="text-xs font-mono font-bold text-purple-300">${formatEGP(finalGuaranteeVal)}</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 border-t border-dark-800">
+                    <div>
+                        <span class="text-slate-400">تاريخ صرف المستخلص الختامي: </span>
+                        <span class="font-bold ${finalPaymentDate ? 'text-white' : 'text-amber-400'} font-mono">${finalPaymentDate || (finalInv ? `لم يصرف بعد (${finalInv.location})` : 'لم يقدم بعد')}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">ميعاد رد التأمين النهائي (+ سنة): </span>
+                        <span class="font-bold text-amber-300 font-mono">${releaseDateStr}</span>
+                    </div>
+                </div>
+                <div class="text-xs pt-1">${releaseStatus}</div>
+            </div>
+        `;
+
+        const content = document.getElementById('detailsModalContent');
+        content.innerHTML = `
+            <div class="border-b border-dark-700 pb-4 mb-4">
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                    <span class="text-xs px-2.5 py-1 rounded bg-sky-950 text-sky-400 font-mono font-bold border border-sky-800">${item.code}</span>
+                    <span class="text-xs px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 font-bold">${item.battalion}</span>
+                    <span class="text-xs px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 font-semibold">${item.generalSite}</span>
+                    ${letter ? '<span class="text-xs px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30"><i class="fa-solid fa-file-shield mr-1"></i> خطاب ضمان بنكي (LG)</span>' : ''}
+                </div>
+                <h2 class="text-lg sm:text-xl font-bold text-white mb-1 leading-snug">${item.name}</h2>
+            </div>
+
+            <div class="flex items-center gap-2 mb-5 flex-wrap">
+                <span class="text-xs text-slate-400 ml-1">الانتقال السريع:</span>
+                <button onclick="crossLinkToInvoice('${item.code}')" class="px-3 py-1.5 rounded-xl bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white transition text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>المستخلصات (${linkedInv.length})</span>
+                </button>
+                <button onclick="crossLinkToInsurance('${item.code}')" class="px-3 py-1.5 rounded-xl bg-amber-600/20 text-amber-300 border border-amber-500/30 hover:bg-amber-600 hover:text-white transition text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>التأمينات الاجتماعية (${linkedInsList.length})</span>
+                </button>
+                <button onclick="crossLinkToGuarantee('${item.code}')" class="px-3 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600 hover:text-white transition text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-award"></i>
+                    <span>ضمان الأعمال والتأمين النهائي</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800">
+                    <div class="text-[11px] text-slate-400">القيمة التعاقدية (الرسمية)</div>
+                    <div class="text-sm sm:text-base font-black text-cyan-400 font-mono mt-1">${formatEGP(item.value)}</div>
+                </div>
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800">
+                    <div class="text-[11px] text-slate-400">المنصرف الفعلي المحصل</div>
+                    <div class="text-sm sm:text-base font-black ${totalPaid > 0 ? 'text-emerald-400' : 'text-slate-400'} font-mono mt-1">${formatEGP(totalPaid)}</div>
+                </div>
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800">
+                    <div class="text-[11px] text-slate-400">إجمالي سداد التأمينات (${linkedInsList.length})</div>
+                    <div class="text-sm sm:text-base font-black text-indigo-300 font-mono mt-1">${formatEGP(totalInsPaid)}</div>
+                </div>
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800">
+                    <div class="text-[11px] text-slate-400">${letter ? 'قيمة خطاب الضمان' : 'التأمين النهائي (5%)'}</div>
+                    <div class="text-sm sm:text-base font-black ${letter ? 'text-indigo-300' : 'text-purple-300'} font-mono mt-1">${formatEGP(finalGuaranteeVal)}</div>
+                </div>
+            </div>
+
+            ${guaranteeCardSection}
+
+            <!-- قسم تفاصيل التأمينات الاجتماعية المسددة لكل مستخلص -->
+            <div class="p-4 bg-dark-950 rounded-xl border border-amber-500/30 mb-4 text-xs space-y-2.5">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="font-bold text-amber-400 flex items-center gap-1.5 text-sm">
+                        <i class="fa-solid fa-file-shield"></i>
+                        <span>بيان سداد التأمينات الاجتماعية والتعلية المسجلة (${linkedInsList.length} مستخلص/شهادة)</span>
+                    </span>
+                    <span class="font-mono font-bold text-indigo-300 bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20">
+                        إجمالي المسدد: ${formatEGP(totalInsPaid)}
+                    </span>
+                </div>
+
+                ${linkedInsList.length > 0 ? `
+                    <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        ${linkedInsList.map((ins, idx) => `
+                            <div class="p-3 rounded-xl bg-dark-900 border border-dark-800 flex flex-col md:flex-row md:items-center justify-between gap-2.5 hover:border-dark-700 transition">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-bold text-[11px] border border-amber-500/20">
+                                            ${ins.certType && ins.certType !== '-' ? ins.certType : `مستخلص #${idx + 1}`}
+                                        </span>
+                                        <span class="font-mono text-sky-400 font-bold text-xs">ملف: ${ins.fileNo}</span>
+                                        ${ins.certDate && ins.certDate !== '-' ? `<span class="text-slate-400 text-[11px] font-mono"><i class="fa-regular fa-calendar-check mr-1"></i>${ins.certDate}</span>` : ''}
+                                    </div>
+                                    <div class="text-slate-300 text-[11px]">
+                                        <span class="text-slate-400">الموقف:</span> ${ins.notes}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 font-mono text-xs flex-wrap self-end md:self-center bg-dark-950 px-3 py-1.5 rounded-lg border border-dark-800">
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] block">سداد التأمينات:</span>
+                                        <span class="text-indigo-300 font-bold">${formatEGP(ins.insuranceVal)}</span>
+                                    </div>
+                                    <div class="h-6 w-px bg-dark-800"></div>
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] block">قيمة التعلية:</span>
+                                        <span class="text-rose-400 font-bold">${formatEGP(ins.retention)}</span>
+                                    </div>
+                                    <div class="h-6 w-px bg-dark-800"></div>
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] block">رد التعلية:</span>
+                                        <span class="${ins.releasedVal > 0 ? 'text-emerald-400 font-bold' : 'text-slate-500'}">${formatEGP(ins.releasedVal)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="pt-2 border-t border-dark-800 flex items-center justify-between text-[11px] font-mono text-slate-400 flex-wrap gap-2">
+                        <span>إجمالي التعلية المحتجزة: <strong class="text-rose-400 font-bold">${formatEGP(totalRetention)}</strong></span>
+                        <span>إجمالي رد التعلية: <strong class="text-emerald-400 font-bold">${formatEGP(totalReleased)}</strong></span>
+                    </div>
+                ` : `<div class="text-slate-500 py-2">لا يوجد ملف تأمينات مسجل برقم هذا المشروع حتى الآن.</div>`}
+            </div>
+
+            <div class="p-4 rounded-xl bg-dark-950 border border-dark-800">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-white">حركة المستخلصات المسجلة (${linkedInv.length})</span>
+                    <span class="text-xs text-slate-400 font-mono">المنصرف الفعلي المحصل: ${formatEGP(totalPaid)}</span>
+                </div>
+                ${linkedInv.length > 0 ? `
+                    <div class="space-y-2 max-h-48 overflow-y-auto">
+                        ${linkedInv.map(inv => `
+                            <div class="p-2.5 rounded-lg bg-dark-900 border border-dark-800 flex flex-wrap items-center justify-between text-xs gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded bg-sky-950 text-sky-400 font-bold text-[11px]">${inv.type}</span>
+                                    <span class="font-mono text-cyan-400 font-bold bg-dark-950 px-1.5 py-0.5 rounded border border-dark-800">${inv.ratio}</span>
+                                    <span class="text-slate-300 font-semibold px-2 py-0.5 rounded bg-dark-800">مكان الأوراق: ${inv.location}</span>
+                                </div>
+                                <div class="flex items-center gap-3 font-mono">
+                                    <span class="text-amber-300">قيمة المستخلص: ${formatEGP(inv.cert_val)}</span>
+                                    <span class="${inv.isPaid && inv.paid > 0 ? 'text-emerald-400 font-bold' : 'text-slate-500'}">
+                                        ${inv.isPaid && inv.paid > 0 ? 'المنصرف: ' + formatEGP(inv.paid) : 'لم يصرف (' + inv.location + ')'}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `<div class="text-xs text-slate-500">لا توجد حركة مستخلصات مسجلة لهذا المشروع في شيت المتابعة.</div>`}
+            </div>
+        `;
+        document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function showInvoiceDetails(projId, seq) {
+        const item = invoiceProjects.find(p => p.seq === seq || p.id === projId);
+        if (!item) return;
+
+        const content = document.getElementById('detailsModalContent');
+        content.innerHTML = `
+            <div class="border-b border-dark-700 pb-4 mb-4">
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                    <span class="text-xs px-2.5 py-1 rounded bg-dark-800 text-emerald-400 font-mono font-bold">${item.id}</span>
+                    <span class="text-xs px-2.5 py-1 rounded bg-dark-800 text-slate-300 font-semibold">${item.battalion}</span>
+                    <span class="text-xs px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 font-bold">${item.type} (النسبة: ${item.ratio})</span>
+                </div>
+                <h2 class="text-lg font-bold text-white mb-1">${item.canonicalName}</h2>
+                ${item.canonicalName !== item.name ? `<div class="text-xs text-slate-400">الوصف بالشيت: ${item.name}</div>` : ''}
+            </div>
+
+            <div class="flex items-center gap-2 mb-4">
+                <button onclick="crossLinkToMaster('${item.id}')" class="px-3 py-1.5 rounded-xl bg-sky-600/20 text-sky-300 border border-sky-500/30 hover:bg-sky-600 hover:text-white transition text-xs font-bold flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-contract"></i>
+                    <span>فتح كارت العقد بالبيان الرسمي</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800 text-center">
+                    <div class="text-[11px] text-slate-400">قيمة المستخلص</div>
+                    <div class="text-sm font-bold text-amber-300 font-mono mt-1">${formatEGP(item.cert_val)}</div>
+                </div>
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800 text-center">
+                    <div class="text-[11px] text-slate-400">ما تم صرفه</div>
+                    <div class="text-sm font-bold ${item.isPaid && item.paid > 0 ? 'text-emerald-400' : 'text-slate-500'} font-mono mt-1">
+                        ${item.isPaid && item.paid > 0 ? formatEGP(item.paid) : '0 ج.م (قيد الإجراءات)'}
+                    </div>
+                </div>
+                <div class="p-3 bg-dark-950 rounded-xl border border-dark-800 text-center">
+                    <div class="text-[11px] text-slate-400">المكان</div>
+                    <div class="text-xs font-bold text-sky-400 mt-1">${item.location}</div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-dark-950 rounded-xl border border-dark-800">
+                <div class="text-[11px] text-slate-400 mb-1">الملاحظات وآخر موقف:</div>
+                <div class="text-xs text-slate-200">${item.status}</div>
+                ${item.paymentDate !== 'غير مسجل' ? `<div class="text-xs text-emerald-400 mt-2 font-mono">تاريخ الصرف المسجل: ${item.paymentDate}</div>` : ''}
+            </div>
+        `;
+        document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function crossLinkToInvoice(id) {
+        closeDetailsModal();
+        switchView('invoices');
+        document.getElementById('invSearchInput').value = id;
+        applyInvoiceFilters();
+    }
+
+    function crossLinkToMaster(id) {
+        closeDetailsModal();
+        switchView('master');
+        document.getElementById('masterSearchInput').value = id;
+        applyMasterFilters();
+    }
+
+    function crossLinkToInsurance(id) {
+        closeDetailsModal();
+        switchView('insurance');
+        document.getElementById('insSearchInput').value = id;
+        applyInsuranceFilters();
+    }
+
+    function crossLinkToGuarantee(id) {
+        closeDetailsModal();
+        switchView('guarantee');
+        document.getElementById('guarSearchInput').value = id;
+        applyGuaranteeFilters();
+    }
+
+    function closeDetailsModal() { document.getElementById('detailsModal').classList.add('hidden'); }
+    window.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailsModal(); });
+
+    function refreshDashboardUI() {
+        const totalMaster = masterProjects.reduce((s, p) => s + p.value, 0);
+        const totalPaid = masterProjects.reduce((s, p) => s + getProjectActualDisbursed(p.code), 0);
+        document.getElementById('dash-overall-ratio').innerText = totalMaster > 0 ? `${((totalPaid / totalMaster) * 100).toFixed(1)}%` : '0%';
+        document.getElementById('dash-remaining-val').innerText = formatEGP(Math.max(0, totalMaster - totalPaid));
+    }
+
+    function renderDashboardCharts() {
+        refreshDashboardUI();
+
+        // 1. Durations Chart
+        const durCounts = {};
+        masterProjects.forEach(p => { durCounts[p.durationFormatted] = (durCounts[p.durationFormatted] || 0) + 1; });
+        const ctxDur = document.getElementById('dashDurationChart');
+        if (ctxDur) {
+            if (durationChart) durationChart.destroy();
+            durationChart = new Chart(ctxDur.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(durCounts),
+                    datasets: [{ data: Object.values(durCounts), backgroundColor: ['#0284c7', '#38bdf8', '#6366f1', '#10b981', '#f59e0b', '#a855f7'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Cairo', size: 10 } } } }, cutout: '70%' }
+            });
+        }
+
+        // 2. Insurance Status Chart
+        let certIssued = insuranceProjects.filter(p => p.notes.includes('شهادة')).length;
+        let released = insuranceProjects.filter(p => p.notes.includes('تم الرد')).length;
+        let mustPay = insuranceProjects.filter(p => p.notes.includes('يلزم الدفع')).length;
+        const ctxIns = document.getElementById('dashInsuranceChart');
+        if (ctxIns) {
+            if (insuranceChart) insuranceChart.destroy();
+            insuranceChart = new Chart(ctxIns.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['تم إصدار شهادة', 'تم رد التعلية', 'يلزم الدفع'],
+                    datasets: [{ data: [certIssued, released, mustPay], backgroundColor: ['#10b981', '#0284c7', '#f59e0b'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Cairo', size: 10 } } } } }
+            });
+        }
+
+        // 3. Battalion Financial Volume
+        const bats = ['ك578', 'ك552', 'ك581', 'ك553'];
+        const contractByBat = bats.map(b => masterProjects.filter(p => p.battalion.includes(b.replace('ك',''))).reduce((s, p) => s + p.value, 0));
+        const paidByBat = bats.map(b => masterProjects.filter(p => p.battalion.includes(b.replace('ك',''))).reduce((s, p) => s + getProjectActualDisbursed(p.code), 0));
+
+        const ctxBat = document.getElementById('dashBattalionCompareChart');
+        if (ctxBat) {
+            if (battalionCompareChart) battalionCompareChart.destroy();
+            battalionCompareChart = new Chart(ctxBat.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: bats,
+                    datasets: [
+                        { label: 'القيمة التعاقدية (البيان الرسمي)', data: contractByBat, backgroundColor: '#0ea5e9', borderRadius: 8 },
+                        { label: 'المنصرف الفعلي المعتمد', data: paidByBat, backgroundColor: '#14b8a6', borderRadius: 8 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Cairo', size: 11 } } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { family: 'Cairo', size: 11 } }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8', font: { family: 'Cairo', size: 9 }, callback: v => (v / 1000000).toFixed(1) + ' م ج.م' }, grid: { color: '#172648' } }
+                    }
+                }
+            });
+        }
+    }
+
+    // ========================================================
+    // 12. INITIALIZATION
+    // ========================================================
+    window.addEventListener('DOMContentLoaded', () => {
+        checkAuthenticationState();
+        syncAllDataSources(false);
+    });
+</script>
+</body>
+</html>
